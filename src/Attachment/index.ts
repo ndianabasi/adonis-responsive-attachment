@@ -79,9 +79,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       extname: file.extname!,
       mimeType: `${file.type}/${file.subtype}`,
       size: file.size,
-      path: file.filePath,
+      path: file.fileName,
     }
-
+ 
     return new ResponsiveAttachment(attributes) as ResponsiveAttachmentContract
   }
 
