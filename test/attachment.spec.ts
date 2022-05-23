@@ -9,15 +9,15 @@
 
 import 'reflect-metadata'
 
+import { join } from 'node:path'
 import test from 'japa'
-import { join } from 'path'
 import supertest from 'supertest'
 import { createServer } from 'http'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { BodyParserMiddleware } from '@adonisjs/bodyparser/build/src/BodyParser'
 import { getDimensions } from '../src/Helpers/ImageManipulationHelper'
 
-import { ResponsiveAttachment } from '../src/Attachment'
+import { kUploadFolder, ResponsiveAttachment } from '../src/Attachment'
 import { setup, cleanup, setupApplication } from '../test-helpers'
 import { readFile } from 'fs/promises'
 
@@ -429,8 +429,8 @@ test.group('ImageManipulationHelper', (group) => {
       const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
       app.container.make(BodyParserMiddleware).handle(ctx, async () => {
         const file = ctx.request.file('avatar')!
-        await file.moveToDisk('image_upload_tmp')
-        const buffer = await Drive.get(file.filePath!)
+        await file.moveToDisk(kUploadFolder)
+        const buffer = await Drive.get(join(kUploadFolder, file.fileName!))
         const { width, height } = await getDimensions(buffer)
 
         assert.equal(width, 1500)
