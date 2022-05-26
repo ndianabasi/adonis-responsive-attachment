@@ -37,7 +37,7 @@ import {
 import { merge, isEmpty, assign, set } from 'lodash'
 import { DEFAULT_BREAKPOINTS } from './decorator'
 
-export const kUploadFolder = 'image_upload_tmp'
+export const tempUploadFolder = 'image_upload_tmp'
 
 /**
  * Attachment class represents an attachment data type
@@ -70,7 +70,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     }
     // Store the file locally first and add the path to the ImageInfo
     // This will be removed after the operation is completed
-    await file.moveToDisk(kUploadFolder)
+    await file.moveToDisk(tempUploadFolder)
 
     if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
       throw new RangeError(
@@ -258,9 +258,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.isLocal = !!this.path || !!this.buffer
 
     if (attributes.fileName) {
-      this.relativePath = join(kUploadFolder, attributes.fileName)
+      this.relativePath = join(tempUploadFolder, attributes.fileName)
     } else if (attributes.name) {
-      this.relativePath = join(kUploadFolder, attributes.name)
+      this.relativePath = join(tempUploadFolder, attributes.name)
     } else {
       this.relativePath = ''
     }
