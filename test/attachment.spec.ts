@@ -9,8 +9,8 @@
 
 import 'reflect-metadata'
 
-import { join } from 'node:path'
 import test from 'japa'
+import { join } from 'path'
 import supertest from 'supertest'
 import { createServer } from 'http'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
