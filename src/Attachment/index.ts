@@ -9,6 +9,7 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
+import { join } from 'path'
 import { Exception } from '@poppinss/utils'
 import { cuid } from '@poppinss/utils/build/helpers'
 import detect from 'detect-file-type'
@@ -35,6 +36,8 @@ import {
 } from '../Helpers/ImageManipulationHelper'
 import { merge, isEmpty, assign, set } from 'lodash'
 import { DEFAULT_BREAKPOINTS } from './decorator'
+
+export const tempUploadFolder = 'image_upload_tmp'
 
 /**
  * Attachment class represents an attachment data type
@@ -67,7 +70,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     }
     // Store the file locally first and add the path to the ImageInfo
     // This will be removed after the operation is completed
-    await file.moveToDisk('image_upload_tmp')
+    await file.moveToDisk(tempUploadFolder)
 
     if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
       throw new RangeError(
@@ -80,6 +83,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       mimeType: `${file.type}/${file.subtype}`,
       size: file.size,
       path: file.filePath,
+      fileName: file.fileName,
     }
 
     return new ResponsiveAttachment(attributes) as ResponsiveAttachmentContract
@@ -200,6 +204,16 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public height?: number
 
   /**
+   * This file name.
+   */
+  public fileName?: string
+
+  /**
+   * The relative path from the disk.
+   */
+  public relativePath?: string
+
+  /**
    * The absolute path of the original uploaded file
    * Available after initial move operation in the decorator
    */
@@ -225,7 +239,10 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    */
   public isDeleted: boolean
 
-  constructor(attributes: AttachmentAttributes, private buffer?: Buffer | null) {
+  constructor(
+    attributes: AttachmentAttributes & { fileName?: string },
+    private buffer?: Buffer | null
+  ) {
     this.name = attributes.name
     this.size = attributes.size
     this.hash = attributes.hash
@@ -236,8 +253,17 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.mimeType = attributes.mimeType
     this.url = attributes.url ?? undefined
     this.breakpoints = attributes.breakpoints ?? undefined
+    this.fileName = attributes.fileName ?? ''
     this.path = attributes.path ?? ''
     this.isLocal = !!this.path || !!this.buffer
+
+    if (attributes.fileName) {
+      this.relativePath = join(tempUploadFolder, attributes.fileName)
+    } else if (attributes.name) {
+      this.relativePath = join(tempUploadFolder, attributes.name)
+    } else {
+      this.relativePath = ''
+    }
   }
 
   public get attributes() {
@@ -292,7 +318,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
   protected async enhanceFile(): Promise<ImageInfo> {
     // Read the image as a buffer using `Drive.get()`
-    const originalFileBuffer = this.buffer ?? (await this.getDisk().get(this.path!))
+    const originalFileBuffer = this.buffer ?? (await this.getDisk().get(this.relativePath!))
 
     // Optimise the image buffer and return the optimised buffer
     // and the info of the image
