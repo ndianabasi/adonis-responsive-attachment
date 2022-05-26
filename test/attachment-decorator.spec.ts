@@ -1538,10 +1538,10 @@ test.group('@responsiveAttachment | find', (group) => {
     assert.instanceOf(user.avatar, ResponsiveAttachment)
 
     assert.isDefined(user.avatar?.urls)
-    assert.isDefined(user.avatar?.breakpoints?.large.url)
-    assert.isDefined(user.avatar?.breakpoints?.medium.url)
-    assert.isDefined(user.avatar?.breakpoints?.small.url)
-    assert.isDefined(user.avatar?.breakpoints?.thumbnail.url)
+    assert.isUndefined(user.avatar?.breakpoints?.large.url)
+    assert.isUndefined(user.avatar?.breakpoints?.medium.url)
+    assert.isUndefined(user.avatar?.breakpoints?.small.url)
+    assert.isUndefined(user.avatar?.breakpoints?.thumbnail.url)
 
     assert.isDefined(body.avatar.url)
     assert.isDefined(body.avatar?.breakpoints?.large.url)
@@ -1673,10 +1673,10 @@ test.group('@responsiveAttachment | fetch', (group) => {
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
 
     assert.isDefined(users[0].avatar?.urls)
-    assert.isDefined(users[0].avatar?.breakpoints?.large.url)
-    assert.isDefined(users[0].avatar?.breakpoints?.medium.url)
-    assert.isDefined(users[0].avatar?.breakpoints?.small.url)
-    assert.isDefined(users[0].avatar?.breakpoints?.thumbnail.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.large.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.medium.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.small.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.thumbnail.url)
 
     assert.isDefined(body.avatar.url)
     assert.isDefined(body.avatar?.breakpoints?.large.url)
@@ -1808,10 +1808,10 @@ test.group('@responsiveAttachment | paginate', (group) => {
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
 
     assert.isDefined(users[0].avatar?.urls)
-    assert.isDefined(users[0].avatar?.breakpoints?.large.url)
-    assert.isDefined(users[0].avatar?.breakpoints?.medium.url)
-    assert.isDefined(users[0].avatar?.breakpoints?.small.url)
-    assert.isDefined(users[0].avatar?.breakpoints?.thumbnail.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.large.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.medium.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.small.url)
+    assert.isUndefined(users[0].avatar?.breakpoints?.thumbnail.url)
 
     assert.isDefined(body.avatar.url)
     assert.isDefined(body.avatar?.breakpoints?.large.url)

@@ -148,10 +148,9 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
      * @param options.forced Force the URLs to be completed whether
      * `preComputedURLs` is true or not
      */
-    computeUrls(options?: {
-      forced: boolean
+    computeUrls(
       signedUrlOptions?: ContentHeaders & { expiresIn?: string | number }
-    }): Promise<void>
+    ): Promise<UrlRecords | undefined>
 
     /**
      * Returns the signed or unsigned URL for each responsive image
@@ -162,8 +161,17 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
 
     /**
      * Attachment attributes
+     * Convert attachment to plain object to be persisted inside
+     * the database
      */
-    toJSON(): (AttachmentAttributes & { url?: string | undefined }) | null
+    toObject(): AttachmentAttributes
+
+    /**
+     * Attachment attributes + url
+     * Convert attachment to JSON object to be sent over
+     * the wire
+     */
+    toJSON(): (AttachmentAttributes & (UrlRecords | undefined)) | null
   }
 
   /**
@@ -183,6 +191,7 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     new (attributes: ImageAttributes, file?: MultipartFileContract): ResponsiveAttachmentContract
     fromFile(file: MultipartFileContract): ResponsiveAttachmentContract
     fromDbResponse(response: string): ResponsiveAttachmentContract
+    fromBuffer(buffer: Buffer): ResponsiveAttachmentContract
     getDrive(): DriveManagerContract
     setDrive(drive: DriveManagerContract): void
   }

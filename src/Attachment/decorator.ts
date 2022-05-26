@@ -260,7 +260,8 @@ export const responsiveAttachment: ResponsiveAttachmentDecorator = (options) => 
     Model.$addColumn(property, {
       ...columnOptions,
       consume: (value) => (value ? ResponsiveAttachment.fromDbResponse(value) : null),
-      prepare: (value) => (value ? JSON.stringify(value) : null),
+      prepare: (value) => (value ? JSON.stringify(value.toObject()) : null),
+      serialize: (value) => (value ? value.toJSON() : null),
     })
 
     /**

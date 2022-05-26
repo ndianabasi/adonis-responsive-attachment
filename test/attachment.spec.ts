@@ -584,19 +584,11 @@ test.group('Images below the large breakeven point', (group) => {
         assert.isTrue(responsiveAttachment?.isPersisted)
         assert.isTrue(responsiveAttachment?.isLocal)
 
-        assert.isNotEmpty(responsiveAttachment?.urls)
-
         assert.isDefined(responsiveAttachment?.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
-
-        assert.isUndefined(responsiveAttachment?.urls?.breakpoints?.large)
-
-        assert.isNotNull(responsiveAttachment?.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.medium.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.small.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.thumbnail.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.large)
 
         assert.isTrue(await Drive.exists(responsiveAttachment?.name!))
         assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.medium.name!))
@@ -767,16 +759,9 @@ test.group('Do not generate thumbnail images when `options.disableThumbnail` is 
         assert.isNotEmpty(responsiveAttachment?.urls)
 
         assert.isDefined(responsiveAttachment?.url)
-        assert.isNotNull(responsiveAttachment?.url)
-        assert.isDefined(responsiveAttachment?.url!)
-        assert.isDefined(responsiveAttachment?.url!)
-        assert.isDefined(responsiveAttachment?.breakpoints?.small.url!)
-        assert.isNotNull(responsiveAttachment?.breakpoints?.small.url!)
-        assert.isDefined(responsiveAttachment?.breakpoints?.medium.url!)
-        assert.isNotNull(responsiveAttachment?.breakpoints?.medium.url!)
-        assert.isDefined(responsiveAttachment?.breakpoints?.large.url!)
-        assert.isNotNull(responsiveAttachment?.breakpoints?.large.url!)
-
+        assert.isUndefined(responsiveAttachment?.breakpoints?.small.url!)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.medium.url!)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.large.url!)
         assert.isUndefined(responsiveAttachment?.breakpoints?.thumbnail)
 
         ctx.response.send(responsiveAttachment)
@@ -861,11 +846,8 @@ test.group('Do not generate responsive images when some default breakpoints are 
         assert.isNotEmpty(responsiveAttachment?.urls)
 
         assert.isDefined(responsiveAttachment?.url)
-        assert.isNotNull(responsiveAttachment?.url)
-        assert.isDefined(responsiveAttachment?.breakpoints?.large.url!)
-        assert.isDefined(responsiveAttachment?.breakpoints?.thumbnail.url!)
-        assert.isNotNull(responsiveAttachment?.breakpoints?.large.url!)
-        assert.isNotNull(responsiveAttachment?.breakpoints?.thumbnail.url!)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.large.url!)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.thumbnail.url!)
 
         ctx.response.send(responsiveAttachment)
         ctx.response.finish()
@@ -897,7 +879,7 @@ test.group('Manual generation of URLs', (group) => {
       app.container.make(BodyParserMiddleware).handle(ctx, async () => {
         const file = ctx.request.file('avatar')!
         const responsiveAttachment = await ResponsiveAttachment.fromFile(file)
-        responsiveAttachment?.setOptions(undefined)
+        responsiveAttachment?.setOptions({ preComputeUrls: true })
         await responsiveAttachment?.save()
         const urls = await responsiveAttachment?.getUrls()
 
@@ -1002,21 +984,12 @@ test.group('ResponsiveAttachment | Custom breakpoints', (group) => {
         assert.isTrue(responsiveAttachment?.isPersisted)
         assert.isTrue(responsiveAttachment?.isLocal)
 
-        assert.isNotEmpty(responsiveAttachment?.urls)
-
         assert.isDefined(responsiveAttachment?.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.xlarge.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.large.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
-
-        assert.isNotNull(responsiveAttachment?.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.xlarge.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.large.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.xlarge.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.large.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.medium.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.small.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.thumbnail.url)
 
         assert.isTrue(await Drive.exists(responsiveAttachment?.name!))
         assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.xlarge.name!))
@@ -1121,19 +1094,11 @@ test.group('ResponsiveAttachment | fromBuffer', (group) => {
         assert.isTrue(responsiveAttachment.isPersisted)
         assert.isTrue(responsiveAttachment.isLocal)
 
-        assert.isNotEmpty(responsiveAttachment?.urls)
-
         assert.isDefined(responsiveAttachment?.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.large.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
-
-        assert.isNotNull(responsiveAttachment?.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.large.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isNotNull(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.large.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.medium.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.small.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.thumbnail.url)
 
         assert.isTrue(await Drive.exists(responsiveAttachment?.name!))
         assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.large.name!))
@@ -1176,7 +1141,7 @@ test.group('ResponsiveAttachment | fromBuffer', (group) => {
           join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg')
         )
         const responsiveAttachment = await ResponsiveAttachment.fromBuffer(readableStream)
-        responsiveAttachment.setOptions({ preComputeUrls: true })
+        responsiveAttachment.setOptions(undefined)
         await responsiveAttachment.save()
         await responsiveAttachment.delete()
 
@@ -1190,18 +1155,6 @@ test.group('ResponsiveAttachment | fromBuffer', (group) => {
     })
 
     const { body } = await supertest(server).post('/')
-
-    assert.isDefined(body.url)
-    assert.isDefined(body.breakpoints.large.url)
-    assert.isDefined(body.breakpoints.medium.url)
-    assert.isDefined(body.breakpoints.small.url)
-    assert.isDefined(body.breakpoints.thumbnail.url)
-
-    assert.isNotNull(body.url)
-    assert.isNotNull(body.breakpoints.large.url)
-    assert.isNotNull(body.breakpoints.medium.url)
-    assert.isNotNull(body.breakpoints.small.url)
-    assert.isNotNull(body.breakpoints.thumbnail.url)
 
     assert.isFalse(await Drive.exists(body.name))
     assert.isFalse(await Drive.exists(body.breakpoints.large.name))
@@ -1367,15 +1320,13 @@ test.group('Do not generate save original image when `options.keepOriginal` is f
         assert.isTrue(responsiveAttachment?.isPersisted)
         assert.isTrue(responsiveAttachment?.isLocal)
 
-        assert.isNotEmpty(responsiveAttachment?.urls)
-
         assert.isUndefined(responsiveAttachment?.url)
         assert.isUndefined(responsiveAttachment?.name!)
 
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.large.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.medium.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.small.url)
-        assert.isDefined(responsiveAttachment?.urls?.breakpoints?.thumbnail.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.large.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.medium.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.small.url)
+        assert.isUndefined(responsiveAttachment?.breakpoints?.thumbnail.url)
 
         assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.large.name!))
         assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.medium.name!))

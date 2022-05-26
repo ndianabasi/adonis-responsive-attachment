@@ -439,6 +439,14 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     })
 
     /**
+     * Update the width and height
+     */
+    if (this.options?.keepOriginal ?? true) {
+      this.width = enhancedImageData.width
+      this.height = enhancedImageData.height
+    }
+
+    /**
      * Update the local value of `breakpoints`
      */
     this.breakpoints = enhancedImageData.breakpoints!
@@ -449,18 +457,18 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.isPersisted = true
 
     /**
-     * Forcefully compute the URL
-     */
-    await this.computeUrls()
-
-    /**
      * Delete the temporary file
      */
     if (this.buffer) {
       this.buffer = null
     } else await this.getDisk().delete(this.path!)
 
-    return merge(enhancedImageData, this.urls)
+    /**
+     * Compute the URL
+     */
+    await this.computeUrls()
+
+    return this
   }
 
   /**
@@ -491,12 +499,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.isPersisted = false
   }
 
-  public async computeUrls(options?: {
-    forced: boolean
-    signedUrlOptions?: ContentHeaders & { expiresIn?: string | number }
-  }) {
-    const { forced, signedUrlOptions } = options || {}
-
+  public async computeUrls(signedUrlOptions?: ContentHeaders & { expiresIn?: string | number }) {
     /**
      * Cannot compute url for a non persisted image
      */
@@ -507,9 +510,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     /**
      * Compute urls when preComputeUrls is set to true
      * or the `preComputeUrls` function exists
-     * or the computation is forced
      */
-    if (!this.options?.preComputeUrls && !forced) {
+    if (!this.options?.preComputeUrls) {
       return
     }
 
@@ -529,7 +531,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
           this.urls.breakpoints[key].url = urls.breakpoints[key].url
         }
       }
-      return
+      return this.urls
     }
 
     /**
@@ -584,29 +586,33 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         }
       }
     }
+
+    return this.urls
   }
 
   /**
    * Returns the signed or unsigned URL for each responsive image
    */
   public async getUrls(signingOptions?: ContentHeaders & { expiresIn?: string | number }) {
-    /**
-     * Forcefully compute the URLs first
-     */
-    await this.computeUrls({ forced: true, ...signingOptions })
-    return this.urls
+    return this.computeUrls({ ...signingOptions })
   }
 
   /**
-   * Serialize attachment instance to JSON
+   * Convert attachment instance to object without the `url` property
+   * for persistence to the database
    */
-  public toJSON() {
+  public toObject() {
     const { path, url, ...originalAttributes } = this.attributes
 
-    return {
-      ...(this.options?.keepOriginal ?? true ? originalAttributes : {}),
-      ...(url ? { url } : {}),
+    return merge(this.options?.keepOriginal ?? true ? originalAttributes : {}, {
       breakpoints: this.breakpoints,
-    }
+    })
+  }
+
+  /**
+   * Serialize attachment instance to JSON object to be sent over the wire
+   */
+  public toJSON() {
+    return merge(this.toObject(), this.urls ? this.urls : {})
   }
 }
