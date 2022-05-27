@@ -1,7 +1,7 @@
 {
   "name": "adonis-responsive-attachment",
-  "version": "1.2.2",
-  "description": "Turn any field on your Lucid models to an image attachment data type while automatically generating responsive formats for image files.",
+  "version": "1.3.0",
+  "description": "Generate and persist optimised and responsive breakpoint images on the fly in your AdonisJS application.",
   "main": "build/providers/ResponsiveAttachmentProvider.js",
   "files": [
     "build/adonis-typings",
