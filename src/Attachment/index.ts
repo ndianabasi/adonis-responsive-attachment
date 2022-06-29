@@ -83,7 +83,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       mimeType: `${file.type}/${file.subtype}`,
       size: file.size,
       path: file.filePath,
-      fileName: file.fileName,
+      fileName: file.fileName.replace(tempUploadFolder, ''),
     }
 
     return new ResponsiveAttachment(attributes) as ResponsiveAttachmentContract
