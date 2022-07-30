@@ -258,9 +258,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.isLocal = !!this.path || !!this.buffer
 
     if (attributes.fileName) {
-      this.relativePath = join(tempUploadFolder, attributes.fileName)
+      this.relativePath = tempUploadFolder + attributes.fileName
     } else if (attributes.name) {
-      this.relativePath = join(tempUploadFolder, attributes.name)
+      this.relativePath = tempUploadFolder + attributes.name
     } else {
       this.relativePath = ''
     }
