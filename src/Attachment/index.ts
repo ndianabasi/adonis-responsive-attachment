@@ -9,6 +9,7 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
+import { join } from 'path'
 import { Exception } from '@poppinss/utils'
 import { cuid } from '@poppinss/utils/build/helpers'
 import detect from 'detect-file-type'
