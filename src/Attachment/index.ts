@@ -317,9 +317,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   }
 
   protected async enhanceFile(): Promise<ImageInfo> {
-    // Read the image as a buffer using `Drive.get()`
-    const originalFileBuffer = this.buffer ?? (await this.getDisk().get(this.relativePath!))
-
+    // Read the image as a buffer using `Drive.get()`, normalizing the path
+    const originalFileBuffer =
+      this.buffer ?? (await this.getDisk().get(this.relativePath!.replace(/\\/g, '/')))
     // Optimise the image buffer and return the optimised buffer
     // and the info of the image
     const { buffer, info } = await optimize(originalFileBuffer, this.options)
