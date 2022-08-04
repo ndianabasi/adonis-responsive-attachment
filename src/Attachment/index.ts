@@ -9,7 +9,7 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
-import { join } from 'path'
+import { join, normalize } from 'path'
 import { Exception } from '@poppinss/utils'
 import { cuid } from '@poppinss/utils/build/helpers'
 import detect from 'detect-file-type'
@@ -317,9 +317,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   }
 
   protected async enhanceFile(): Promise<ImageInfo> {
-    // Read the image as a buffer using `Drive.get()`
-    const originalFileBuffer = this.buffer ?? (await this.getDisk().get(this.relativePath!))
-
+    // Read the image as a buffer using `Drive.get()`, normalizing the path
+    const originalFileBuffer =
+      this.buffer ?? (await this.getDisk().get(normalize(this.relativePath!)))
     // Optimise the image buffer and return the optimised buffer
     // and the info of the image
     const { buffer, info } = await optimize(originalFileBuffer, this.options)
