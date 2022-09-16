@@ -360,7 +360,7 @@ The `forceFormat` option is used to change the image from one format to another.
 
 ```ts
 class Post extends BaseModel {
-  @responsiveAttachment({forcedFormat: 'webp'})
+  @responsiveAttachment({forceFormat: 'webp'})
   public coverImage: ResponsiveAttachmentContract
 }
 ```
