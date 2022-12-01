@@ -530,7 +530,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         const value = attachmentData[key]
         let url: string
 
-        if (key === 'name') {
+        if (key === 'name' && !!this.options?.keepOriginal) {
           if (!(this.options?.keepOriginal ?? true)) continue
           const name = value as string
 

@@ -1647,4 +1647,56 @@ test.group('Other checks', (group) => {
     assert.isDefined(avatar!.breakpoints!.medium.url)
     assert.isDefined(avatar!.breakpoints!.small.url)
   })
+
+  test.only('should not include original attributes and url when "keepOriginal" is "false"', async (assert) => {
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @Attachment({ folder: 'a', keepOriginal: false })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        const file = ctx.request.file('avatar')!
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromFile(file)
+        await user.save()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const response = await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+
+    const createdUser = await User.findOrFail(response.body.id)
+    let avatar = createdUser.toJSON().avatar
+    assert.isUndefined(avatar!.url)
+    assert.isUndefined(avatar!.breakpoints!.thumbnail.url)
+    assert.isUndefined(avatar!.breakpoints!.large.url)
+    assert.isUndefined(avatar!.breakpoints!.medium.url)
+    assert.isUndefined(avatar!.breakpoints!.small.url)
+
+    await createdUser.avatar!.getUrls()
+    avatar = createdUser.toJSON().avatar
+
+    assert.isUndefined(avatar!.url)
+    assert.isUndefined(avatar!.name)
+    assert.isDefined(avatar!.breakpoints!.thumbnail.url)
+    assert.isDefined(avatar!.breakpoints!.large.url)
+    assert.isDefined(avatar!.breakpoints!.medium.url)
+    assert.isDefined(avatar!.breakpoints!.small.url)
+  })
 })
