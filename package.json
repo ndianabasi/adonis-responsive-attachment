@@ -41,36 +41,36 @@
   "author": "Ndianabasi Udonkang",
   "license": "MIT",
   "devDependencies": {
-    "@adonisjs/lucid": "^18.0.0",
+    "@adonisjs/lucid": "^18.3.0",
     "@adonisjs/mrm-preset": "^5.0.3",
-    "@adonisjs/require-ts": "^2.0.12",
+    "@adonisjs/require-ts": "^2.0.13",
     "@poppinss/dev-utils": "^2.0.3",
-    "@types/lodash": "^4.14.182",
-    "@types/node": "^17.0.35",
-    "@types/sharp": "^0.30.2",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "^18.11.10",
+    "@types/sharp": "^0.31.0",
     "@types/supertest": "^2.0.12",
-    "commitizen": "^4.2.4",
+    "commitizen": "^4.2.5",
     "cz-conventional-changelog": "^3.3.0",
-    "del-cli": "^4.0.1",
-    "eslint": "^8.16.0",
+    "del-cli": "^5.0.0",
+    "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-adonis": "^2.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-adonis": "^2.1.1",
+    "eslint-plugin-prettier": "^4.2.1",
     "github-label-sync": "^2.2.0",
-    "husky": "^8.0.1",
+    "husky": "^8.0.2",
     "japa": "^4.0.0",
-    "mrm": "^4.0.0",
-    "np": "^7.6.1",
+    "mrm": "^4.1.13",
+    "np": "^7.6.2",
     "nyc": "^15.1.0",
-    "prettier": "^2.6.2",
+    "prettier": "^2.8.0",
     "reflect-metadata": "^0.1.13",
-    "sqlite3": "^5.0.8",
-    "supertest": "^6.2.3",
-    "typescript": "^4.7.2"
+    "sqlite3": "^5.1.2",
+    "supertest": "^6.3.1",
+    "typescript": "^4.9.3"
   },
   "peerDependencies": {
     "@adonisjs/core": "^5.8.3",
-    "@adonisjs/lucid": "^18.0.0"
+    "@adonisjs/lucid": "^18.3.0"
   },
   "config": {
     "commitizen": {
@@ -91,11 +91,11 @@
   "homepage": "https://github.com/ndianabasi/adonis-responsive-attachment#readme",
   "dependencies": {
     "@adonisjs/core": "^5.9.0",
-    "@poppinss/utils": "^4.0.4",
+    "@poppinss/utils": "^5.0.0",
     "detect-file-type": "^0.2.8",
     "lodash": "^4.17.21",
     "mysql": "^2.18.1",
-    "sharp": "^0.30.5"
+    "sharp": "^0.31.2"
   },
   "adonisjs": {
     "types": "adonis-responsive-attachment",
