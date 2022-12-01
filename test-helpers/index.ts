@@ -168,7 +168,16 @@ export async function setup(application: ApplicationContract) {
  */
 export async function cleanup(application: ApplicationContract) {
   const db = application.container.use('Adonis/Lucid/Database')
-  await db.connection().schema.dropTableIfExists('users')
+  await rollbackDB(application)
   await db.manager.closeAll()
   await fs.cleanup()
+}
+
+/**
+ * Rollback DB
+ */
+
+export async function rollbackDB(application: ApplicationContract) {
+  const db = application.container.use('Adonis/Lucid/Database')
+  await db.connection().schema.dropTableIfExists('users')
 }

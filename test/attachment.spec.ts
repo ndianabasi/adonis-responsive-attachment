@@ -15,7 +15,7 @@ import supertest from 'supertest'
 import { createServer } from 'http'
 import { readFile } from 'fs/promises'
 import { ResponsiveAttachment } from '../src/Attachment/index'
-import { setup, cleanup, setupApplication } from '../test-helpers'
+import { setup, cleanup, setupApplication, rollbackDB } from '../test-helpers'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { responsiveAttachment as Attachment } from '../src/Attachment/decorator'
 import { getDimensions } from '../src/Helpers/ImageManipulationHelper'
@@ -83,10 +83,16 @@ const samplePersistedImageData = {
 test.group('ResponsiveAttachment | fromDbResponse', (group) => {
   group.before(async () => {
     app = await setupApplication()
-    await setup(app)
-
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -216,6 +222,14 @@ test.group('ResponsiveAttachment | fromFile', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -419,6 +433,14 @@ test.group('ImageManipulationHelper', (group) => {
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
   })
 
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
+  })
+
   group.after(async () => {
     await cleanup(app)
   })
@@ -462,10 +484,17 @@ test.group('Images below the thumbnail resize options', (group) => {
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
   })
 
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
+  })
+
   group.after(async () => {
     await cleanup(app)
   })
-
   test('does not create thumbnail and responsive images for files below the THUMBNAIL_RESIZE_OPTIONS', async (assert) => {
     const Drive = app.container.resolveBinding('Adonis/Core/Drive')
 
@@ -534,6 +563,14 @@ test.group('Images below the large breakeven point', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -630,6 +667,14 @@ test.group(
       ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
     })
 
+    group.beforeEach(async () => {
+      await setup(app)
+    })
+
+    group.afterEach(async () => {
+      await rollbackDB(app)
+    })
+
     group.after(async () => {
       await cleanup(app)
     })
@@ -709,6 +754,14 @@ test.group('Do not generate thumbnail images when `options.disableThumbnail` is 
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
   })
 
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
+  })
+
   group.after(async () => {
     await cleanup(app)
   })
@@ -783,6 +836,14 @@ test.group('Do not generate responsive images when some default breakpoints are 
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -870,6 +931,14 @@ test.group('Manual generation of URLs', (group) => {
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
   })
 
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
+  })
+
   group.after(async () => {
     await cleanup(app)
   })
@@ -900,20 +969,6 @@ test.group('Manual generation of URLs', (group) => {
   })
 })
 
-test.group('Error checks', (group) => {
-  group.before(async () => {
-    app = await setupApplication()
-    await setup(app)
-
-    app.container.resolveBinding('Adonis/Core/Route').commit()
-    ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
-  })
-
-  group.after(async () => {
-    await cleanup(app)
-  })
-})
-
 test.group('ResponsiveAttachment | Custom breakpoints', (group) => {
   group.before(async () => {
     app = await setupApplication()
@@ -921,6 +976,14 @@ test.group('ResponsiveAttachment | Custom breakpoints', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -1041,6 +1104,14 @@ test.group('ResponsiveAttachment | fromBuffer', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -1174,6 +1245,14 @@ test.group('ResponsiveAttachment | errors', (group) => {
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
   })
 
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
+  })
+
   group.after(async () => {
     await cleanup(app)
   })
@@ -1253,10 +1332,16 @@ test.group('ResponsiveAttachment | errors', (group) => {
 test.group('Do not generate save original image when `options.keepOriginal` is false', (group) => {
   group.before(async () => {
     app = await setupApplication()
-    await setup(app)
-
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
   })
 
   group.after(async () => {
@@ -1366,6 +1451,26 @@ test.group('Do not generate save original image when `options.keepOriginal` is f
     assert.notExists(body.mimeType)
     assert.notExists(body.url)
   })
+})
+
+test.group('Other checks', (group) => {
+  group.before(async () => {
+    app = await setupApplication()
+    app.container.resolveBinding('Adonis/Core/Route').commit()
+    ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+  })
+
+  group.beforeEach(async () => {
+    await setup(app)
+  })
+
+  group.afterEach(async () => {
+    await rollbackDB(app)
+  })
+
+  group.after(async () => {
+    await cleanup(app)
+  })
 
   test('change the folder for an upload at run-time', async (assert) => {
     const server = createServer((req, res) => {
@@ -1405,5 +1510,141 @@ test.group('Do not generate save original image when `options.keepOriginal` is f
     await supertest(server)
       .post('/')
       .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+  })
+
+  test('ensure urls are return when "preComputeUrls" is "true"', async (assert) => {
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        class User extends BaseModel {
+          @column({ isPrimary: true })
+          public id: string
+
+          @column()
+          public username: string
+
+          @Attachment({ folder: 'a' })
+          public avatar: ResponsiveAttachmentContract | null
+        }
+
+        const file = ctx.request.file('avatar')!
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromFile(file)
+        user.avatar.setOptions({ folder: 'a/b/c', preComputeUrls: true })
+        await user.save()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const response = await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+
+    const body = response.body
+
+    assert.isDefined(body.avatar.url)
+    assert.isDefined(body.avatar.breakpoints.thumbnail.url)
+    assert.isDefined(body.avatar.breakpoints.large.url)
+    assert.isDefined(body.avatar.breakpoints.medium.url)
+    assert.isDefined(body.avatar.breakpoints.small.url)
+  })
+
+  test('ensure urls are not persisted to the database', async (assert) => {
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @Attachment({ folder: 'a' })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        const file = ctx.request.file('avatar')!
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromFile(file)
+        user.avatar.setOptions({ folder: 'a/b/c', preComputeUrls: true })
+        await user.save()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const response = await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+
+    const createdUser = await User.findOrFail(response.body.id)
+
+    assert.isUndefined(createdUser.avatar!.url)
+    assert.isUndefined(createdUser.avatar!.breakpoints!.thumbnail.url)
+    assert.isUndefined(createdUser.avatar!.breakpoints!.large.url)
+    assert.isUndefined(createdUser.avatar!.breakpoints!.medium.url)
+    assert.isUndefined(createdUser.avatar!.breakpoints!.small.url)
+  })
+
+  test('ensure urls can be computed with `getUrls()`', async (assert) => {
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @Attachment({ folder: 'a' })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        const file = ctx.request.file('avatar')!
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromFile(file)
+        await user.save()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const response = await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+
+    const createdUser = await User.findOrFail(response.body.id)
+    let avatar = createdUser.toJSON().avatar
+    assert.isUndefined(avatar!.url)
+    assert.isUndefined(avatar!.breakpoints!.thumbnail.url)
+    assert.isUndefined(avatar!.breakpoints!.large.url)
+    assert.isUndefined(avatar!.breakpoints!.medium.url)
+    assert.isUndefined(avatar!.breakpoints!.small.url)
+
+    await createdUser.avatar!.getUrls()
+    avatar = createdUser.toJSON().avatar
+
+    assert.isDefined(avatar!.url)
+    assert.isDefined(avatar!.breakpoints!.thumbnail.url)
+    assert.isDefined(avatar!.breakpoints!.large.url)
+    assert.isDefined(avatar!.breakpoints!.medium.url)
+    assert.isDefined(avatar!.breakpoints!.small.url)
   })
 })

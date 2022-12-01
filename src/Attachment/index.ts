@@ -493,7 +493,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
      * Compute urls when preComputeUrls is set to true
      * or the `preComputeUrls` function exists
      */
-    if (!this.options?.preComputeUrls) {
+    if (!this.options?.preComputeUrls && this.isLocal) {
       return
     }
 
@@ -595,6 +595,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Serialize attachment instance to JSON object to be sent over the wire
    */
   public toJSON() {
-    return merge(this.toObject(), this.urls ? this.urls : {})
+    return merge(this.toObject(), this.urls ?? {})
   }
 }
