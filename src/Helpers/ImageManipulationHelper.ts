@@ -49,15 +49,19 @@ export const resizeTo = async function (
   options: AttachmentOptions,
   resizeOptions: sharp.ResizeOptions
 ) {
-  const sharpInstance = options?.forceFormat
-    ? sharp(buffer, { failOnError: false }).toFormat(options.forceFormat)
-    : sharp(buffer, { failOnError: false })
+  try {
+    const sharpInstance = options?.forceFormat
+      ? sharp(buffer, { failOnError: false }).toFormat(options.forceFormat)
+      : sharp(buffer, { failOnError: false })
 
-  return await sharpInstance
-    .withMetadata()
-    .resize(resizeOptions)
-    .toBuffer()
-    .catch(() => null)
+    return await sharpInstance
+      .withMetadata()
+      .resize(resizeOptions)
+      .toBuffer()
+      .catch(() => null)
+  } catch (error) {
+    return error
+  }
 }
 
 export const breakpointSmallerThan = (breakpoint: number, { width, height }: FileDimensions) =>
@@ -91,40 +95,44 @@ export const generateBreakpoint = async ({
   breakpoint: number
   options: AttachmentOptions
 }): Promise<BreakpointFormat> => {
-  const breakpointBuffer = await resizeTo(imageData.buffer!, options, {
-    width: breakpoint,
-    height: breakpoint,
-    fit: 'inside',
-  })
-
-  if (breakpointBuffer) {
-    const { width, height, size, format } = await getMetaData(breakpointBuffer)
-
-    const extname = getImageExtension(format as ImageInfo['format'])
-    const breakpointFileName = generateName({
-      extname,
-      hash: imageData.hash,
-      options,
-      prefix: key as keyof ImageBreakpoints,
-      fileName: imageData.fileName,
+  try {
+    const breakpointBuffer = await resizeTo(imageData.buffer!, options, {
+      width: breakpoint,
+      height: breakpoint,
+      fit: 'inside',
     })
 
-    return {
-      key: key as keyof ImageBreakpoints,
-      file: {
-        name: breakpointFileName,
-        hash: imageData.hash,
+    if (breakpointBuffer) {
+      const { width, height, size, format } = await getMetaData(breakpointBuffer)
+
+      const extname = getImageExtension(format as ImageInfo['format'])
+      const breakpointFileName = generateName({
         extname,
-        mimeType: `image/${format}`,
-        format: format as AttachmentOptions['forceFormat'],
-        width: width,
-        height: height,
-        size: bytesToKBytes(size!),
-        buffer: breakpointBuffer,
-      },
+        hash: imageData.hash,
+        options,
+        prefix: key as keyof ImageBreakpoints,
+        fileName: imageData.fileName,
+      })
+
+      return {
+        key: key as keyof ImageBreakpoints,
+        file: {
+          name: breakpointFileName,
+          hash: imageData.hash,
+          extname,
+          mimeType: `image/${format}`,
+          format: format as AttachmentOptions['forceFormat'],
+          width: width,
+          height: height,
+          size: bytesToKBytes(size!),
+          buffer: breakpointBuffer,
+        },
+      }
+    } else {
+      return null
     }
-  } else {
-    return null
+  } catch (error) {
+    return error
   }
 }
 
@@ -159,135 +167,147 @@ export const optimize = async function (
   buffer: Buffer,
   options?: AttachmentOptions
 ): Promise<OptimizedOutput> {
-  const { optimizeOrientation, optimizeSize, forceFormat } = options || {}
+  try {
+    const { optimizeOrientation, optimizeSize, forceFormat } = options || {}
 
-  // Check if the image is in the right format or can be size optimised
-  if (!optimizeSize || !(await canBeProcessed(buffer))) {
-    return { buffer }
+    // Check if the image is in the right format or can be size optimised
+    if (!optimizeSize || !(await canBeProcessed(buffer))) {
+      return { buffer }
+    }
+
+    // Auto rotate the image if `optimizeOrientation` is true
+    let sharpInstance = optimizeOrientation
+      ? sharp(buffer, { failOnError: false }).rotate()
+      : sharp(buffer, { failOnError: false })
+
+    // Force image to output to a specific format if `forceFormat` is true
+    sharpInstance = forceFormat ? sharpInstance.toFormat(forceFormat) : sharpInstance
+
+    return await sharpInstance
+      .toBuffer({ resolveWithObject: true })
+      .then(({ data, info }) => {
+        // The original buffer should not be smaller than the optimised buffer
+        const outputBuffer = buffer.length < data.length ? buffer : data
+
+        return {
+          buffer: outputBuffer,
+          info: {
+            width: info.width,
+            height: info.height,
+            size: bytesToKBytes(outputBuffer.length),
+            format: info.format as AttachmentOptions['forceFormat'],
+            mimeType: `image/${info.format}`,
+            extname: getImageExtension(info.format as ImageInfo['format']),
+          },
+        }
+      })
+      .catch(() => ({ buffer }))
+  } catch (error) {
+    return error
   }
-
-  // Auto rotate the image if `optimizeOrientation` is true
-  let sharpInstance = optimizeOrientation
-    ? sharp(buffer, { failOnError: false }).rotate()
-    : sharp(buffer, { failOnError: false })
-
-  // Force image to output to a specific format if `forceFormat` is true
-  sharpInstance = forceFormat ? sharpInstance.toFormat(forceFormat) : sharpInstance
-
-  return await sharpInstance
-    .toBuffer({ resolveWithObject: true })
-    .then(({ data, info }) => {
-      // The original buffer should not be smaller than the optimised buffer
-      const outputBuffer = buffer.length < data.length ? buffer : data
-
-      return {
-        buffer: outputBuffer,
-        info: {
-          width: info.width,
-          height: info.height,
-          size: bytesToKBytes(outputBuffer.length),
-          format: info.format as AttachmentOptions['forceFormat'],
-          mimeType: `image/${info.format}`,
-          extname: getImageExtension(info.format as ImageInfo['format']),
-        },
-      }
-    })
-    .catch(() => ({ buffer }))
 }
 
 export const generateThumbnail = async function (
   imageData: ImageInfo,
   options: AttachmentOptions
 ): Promise<ImageInfo | null> {
-  options = getMergedOptions(options)
+  try {
+    options = getMergedOptions(options)
 
-  if (!(await canBeProcessed(imageData.buffer!))) {
-    return null
-  }
+    if (!(await canBeProcessed(imageData.buffer!))) {
+      return null
+    }
 
-  if (!options?.responsiveDimensions || options?.disableThumbnail) {
-    return null
-  }
+    if (!options?.responsiveDimensions || options?.disableThumbnail) {
+      return null
+    }
 
-  const { width, height } = await getDimensions(imageData.buffer!)
+    const { width, height } = await getDimensions(imageData.buffer!)
 
-  if (!width || !height) return null
+    if (!width || !height) return null
 
-  if (width > THUMBNAIL_RESIZE_OPTIONS.width || height > THUMBNAIL_RESIZE_OPTIONS.height) {
-    const thumbnailBuffer = await resizeTo(imageData.buffer!, options, THUMBNAIL_RESIZE_OPTIONS)
+    if (width > THUMBNAIL_RESIZE_OPTIONS.width || height > THUMBNAIL_RESIZE_OPTIONS.height) {
+      const thumbnailBuffer = await resizeTo(imageData.buffer!, options, THUMBNAIL_RESIZE_OPTIONS)
 
-    if (thumbnailBuffer) {
-      const {
-        width: thumbnailWidth,
-        height: thumbnailHeight,
-        size,
-        format,
-      } = await getMetaData(thumbnailBuffer)
+      if (thumbnailBuffer) {
+        const {
+          width: thumbnailWidth,
+          height: thumbnailHeight,
+          size,
+          format,
+        } = await getMetaData(thumbnailBuffer)
 
-      const extname = getImageExtension(format as ImageInfo['format'])
+        const extname = getImageExtension(format as ImageInfo['format'])
 
-      const thumbnailFileName = generateName({
-        extname,
-        hash: imageData.hash,
-        options,
-        prefix: 'thumbnail',
-        fileName: imageData.fileName,
-      })
+        const thumbnailFileName = generateName({
+          extname,
+          hash: imageData.hash,
+          options,
+          prefix: 'thumbnail',
+          fileName: imageData.fileName,
+        })
 
-      return {
-        name: thumbnailFileName,
-        hash: imageData.hash,
-        extname,
-        mimeType: `image/${format}`,
-        format: format as AttachmentOptions['forceFormat'],
-        width: thumbnailWidth,
-        height: thumbnailHeight,
-        size: bytesToKBytes(size!),
-        buffer: thumbnailBuffer,
+        return {
+          name: thumbnailFileName,
+          hash: imageData.hash,
+          extname,
+          mimeType: `image/${format}`,
+          format: format as AttachmentOptions['forceFormat'],
+          width: thumbnailWidth,
+          height: thumbnailHeight,
+          size: bytesToKBytes(size!),
+          buffer: thumbnailBuffer,
+        }
       }
     }
-  }
 
-  return null
+    return null
+  } catch (error) {
+    return error
+  }
 }
 
 export const generateBreakpointImages = async function (
   imageData: ImageInfo,
   options: AttachmentOptions
 ) {
-  options = getMergedOptions(options)
-  /**
-   * Noop if `responsiveDimensions` is falsy
-   */
-  if (!options.responsiveDimensions) return []
+  try {
+    options = getMergedOptions(options)
+    /**
+     * Noop if `responsiveDimensions` is falsy
+     */
+    if (!options.responsiveDimensions) return []
 
-  /**
-   * Noop if image format is not allowed
-   */
-  if (!(await canBeProcessed(imageData.buffer!))) {
-    return []
-  }
+    /**
+     * Noop if image format is not allowed
+     */
+    if (!(await canBeProcessed(imageData.buffer!))) {
+      return []
+    }
 
-  const originalDimensions: FileDimensions = await getDimensions(imageData.buffer!)
+    const originalDimensions: FileDimensions = await getDimensions(imageData.buffer!)
 
-  const activeBreakpoints = pickBy(options.breakpoints, (value) => {
-    return value !== 'off'
-  })
-
-  if (isEmpty(activeBreakpoints)) return []
-
-  return Promise.all(
-    Object.keys(activeBreakpoints).map((key) => {
-      const breakpointValue = options.breakpoints?.[key] as number
-
-      const isBreakpointSmallerThanOriginal = breakpointSmallerThan(
-        breakpointValue,
-        originalDimensions
-      )
-
-      if (isBreakpointSmallerThanOriginal) {
-        return generateBreakpoint({ key, imageData, breakpoint: breakpointValue, options })
-      }
+    const activeBreakpoints = pickBy(options.breakpoints, (value) => {
+      return value !== 'off'
     })
-  )
+
+    if (isEmpty(activeBreakpoints)) return []
+
+    return Promise.all(
+      Object.keys(activeBreakpoints).map((key) => {
+        const breakpointValue = options.breakpoints?.[key] as number
+
+        const isBreakpointSmallerThanOriginal = breakpointSmallerThan(
+          breakpointValue,
+          originalDimensions
+        )
+
+        if (isBreakpointSmallerThanOriginal) {
+          return generateBreakpoint({ key, imageData, breakpoint: breakpointValue, options })
+        }
+      })
+    )
+  } catch (error) {
+    return error
+  }
 }
