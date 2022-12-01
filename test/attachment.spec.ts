@@ -17,7 +17,7 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { BodyParserMiddleware } from '@adonisjs/bodyparser/build/src/BodyParser'
 import { getDimensions } from '../src/Helpers/ImageManipulationHelper'
 
-import { tempUploadFolder, ResponsiveAttachment } from '../src/Attachment'
+import { ResponsiveAttachment } from '../src/Attachment'
 import { setup, cleanup, setupApplication } from '../test-helpers'
 import { readFile } from 'fs/promises'
 
@@ -429,8 +429,8 @@ test.group('ImageManipulationHelper', (group) => {
       const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
       app.container.make(BodyParserMiddleware).handle(ctx, async () => {
         const file = ctx.request.file('avatar')!
-        await file.moveToDisk(tempUploadFolder)
-        const buffer = await Drive.get(join(tempUploadFolder, file.fileName!))
+        await file.moveToDisk(app.tmpPath('uploads'), { name: file.clientName })
+        const buffer = await Drive.get(join(app.tmpPath('uploads'), file.clientName))
         const { width, height } = await getDimensions(buffer)
 
         assert.equal(width, 1500)

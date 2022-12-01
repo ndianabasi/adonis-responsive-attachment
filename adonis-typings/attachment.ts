@@ -189,9 +189,9 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
    */
   export interface AttachmentConstructorContract {
     new (attributes: ImageAttributes, file?: MultipartFileContract): ResponsiveAttachmentContract
-    fromFile(file: MultipartFileContract): ResponsiveAttachmentContract
+    fromFile(file: MultipartFileContract): Promise<ResponsiveAttachmentContract>
     fromDbResponse(response: string): ResponsiveAttachmentContract
-    fromBuffer(buffer: Buffer): ResponsiveAttachmentContract
+    fromBuffer(buffer: Buffer): Promise<ResponsiveAttachmentContract>
     getDrive(): DriveManagerContract
     setDrive(drive: DriveManagerContract): void
   }

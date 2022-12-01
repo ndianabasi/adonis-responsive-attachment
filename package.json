@@ -41,7 +41,6 @@
   "author": "Ndianabasi Udonkang",
   "license": "MIT",
   "devDependencies": {
-    "@adonisjs/core": "^5.8.3",
     "@adonisjs/lucid": "^18.0.0",
     "@adonisjs/mrm-preset": "^5.0.3",
     "@adonisjs/require-ts": "^2.0.12",
@@ -91,6 +90,7 @@
   },
   "homepage": "https://github.com/ndianabasi/adonis-responsive-attachment#readme",
   "dependencies": {
+    "@adonisjs/core": "^5.9.0",
     "@poppinss/utils": "^4.0.4",
     "detect-file-type": "^0.2.8",
     "lodash": "^4.17.21",

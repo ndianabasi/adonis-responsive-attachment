@@ -9,13 +9,21 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
-import { join, normalize } from 'path'
-import { Exception } from '@poppinss/utils'
-import { cuid } from '@poppinss/utils/build/helpers'
 import detect from 'detect-file-type'
-
+import { readFile } from 'fs/promises'
+import { DEFAULT_BREAKPOINTS } from './decorator'
+import { cuid } from '@poppinss/utils/build/helpers'
+import { merge, isEmpty, assign, set } from 'lodash'
 import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
-import type { DriveManagerContract, ContentHeaders } from '@ioc:Adonis/Core/Drive'
+import { DriveManagerContract, ContentHeaders } from '@ioc:Adonis/Core/Drive'
+import {
+  allowedFormats,
+  generateBreakpointImages,
+  generateName,
+  generateThumbnail,
+  getDimensions,
+  optimize,
+} from '../Helpers/ImageManipulationHelper'
 import type {
   AttachmentOptions,
   ResponsiveAttachmentContract,
@@ -26,16 +34,6 @@ import type {
   ImageBreakpoints,
   ImageAttributes,
 } from '@ioc:Adonis/Addons/ResponsiveAttachment'
-import {
-  allowedFormats,
-  generateBreakpointImages,
-  generateName,
-  generateThumbnail,
-  getDimensions,
-  optimize,
-} from '../Helpers/ImageManipulationHelper'
-import { merge, isEmpty, assign, set } from 'lodash'
-import { DEFAULT_BREAKPOINTS } from './decorator'
 
 export const tempUploadFolder = 'image_upload_tmp'
 
@@ -68,9 +66,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     if (!file) {
       throw new SyntaxError('You should provide a non-falsy value')
     }
-    // Store the file locally first and add the path to the ImageInfo
-    // This will be removed after the operation is completed
-    await file.moveToDisk(tempUploadFolder)
 
     if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
       throw new RangeError(
@@ -78,21 +73,30 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       )
     }
 
+    if (!file.tmpPath) {
+      throw new Error('Please provide a valid file')
+    }
+
+    // Get the file buffer
+    const buffer = await readFile(file.tmpPath)
+
+    let fileNameArray = file.clientName.split('.')
+    const fileName = fileNameArray.slice(0, fileNameArray.length - 1).join('.')
+
     const attributes = {
       extname: file.extname!,
       mimeType: `${file.type}/${file.subtype}`,
       size: file.size,
-      path: file.filePath,
-      fileName: file.fileName?.replace(tempUploadFolder, ''),
+      fileName,
     }
 
-    return new ResponsiveAttachment(attributes) as ResponsiveAttachmentContract
+    return new ResponsiveAttachment(attributes, buffer) as ResponsiveAttachmentContract
   }
 
   /**
    * Create attachment instance from the bodyparser via a buffer
    */
-  public static fromBuffer(buffer: Buffer): Promise<ResponsiveAttachmentContract> {
+  public static fromBuffer(buffer: Buffer, name?: string): Promise<ResponsiveAttachmentContract> {
     return new Promise((resolve, reject) => {
       try {
         type BufferProperty = { ext: string; mime: string }
@@ -104,7 +108,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
             throw new Error(err instanceof Error ? err.message : err)
           }
           if (!result) {
-            throw new Exception('Please provide a valid file buffer')
+            throw new Error('Please provide a valid file buffer')
           }
           bufferProperty = result
         })
@@ -122,6 +126,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
           extname: ext,
           mimeType: mime,
           size: buffer.length,
+          fileName: name,
         }
 
         return resolve(new ResponsiveAttachment(attributes, buffer) as ResponsiveAttachmentContract)
@@ -209,17 +214,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public fileName?: string
 
   /**
-   * The relative path from the disk.
-   */
-  public relativePath?: string
-
-  /**
-   * The absolute path of the original uploaded file
-   * Available after initial move operation in the decorator
-   */
-  public path?: string
-
-  /**
    * The format or filetype of the image.
    */
   public format?: AttachmentOptions['forceFormat']
@@ -239,10 +233,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    */
   public isDeleted: boolean
 
-  constructor(
-    attributes: AttachmentAttributes & { fileName?: string },
-    private buffer?: Buffer | null
-  ) {
+  constructor(attributes: AttachmentAttributes & { fileName?: string }, private buffer?: Buffer) {
     this.name = attributes.name
     this.size = attributes.size
     this.hash = attributes.hash
@@ -254,16 +245,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.url = attributes.url ?? undefined
     this.breakpoints = attributes.breakpoints ?? undefined
     this.fileName = attributes.fileName ?? ''
-    this.path = attributes.path ?? ''
-    this.isLocal = !!this.path || !!this.buffer
-
-    if (attributes.fileName) {
-      this.relativePath = join(tempUploadFolder, attributes.fileName)
-    } else if (attributes.name) {
-      this.relativePath = join(tempUploadFolder, attributes.name)
-    } else {
-      this.relativePath = ''
-    }
+    this.isLocal = !!this.buffer
+    this.fileName = attributes.fileName
   }
 
   public get attributes() {
@@ -278,7 +261,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       mimeType: this.mimeType,
       url: this.url,
       breakpoints: this.breakpoints!,
-      path: this.path!,
+      buffer: this.buffer,
     }
   }
 
@@ -286,15 +269,15 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * "isLocal = true" means the instance is created locally
    * using the bodyparser file object
    */
-  public isLocal = !!this.path
+  public isLocal = !!this.buffer
 
   /**
    * Returns disk instance
    */
   private getDisk() {
     const disk = this.options?.disk
-    const Drive = (this.constructor as AttachmentConstructorContract).getDrive()
-    return disk ? Drive.use(disk) : Drive.use()
+    const drive = (this.constructor as AttachmentConstructorContract).getDrive()
+    return disk ? drive.use(disk) : drive.use()
   }
 
   /**
@@ -317,12 +300,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   }
 
   protected async enhanceFile(): Promise<ImageInfo> {
-    // Read the image as a buffer using `Drive.get()`, normalizing the path
-    const originalFileBuffer =
-      this.buffer ?? (await this.getDisk().get(normalize(this.relativePath!)))
     // Optimise the image buffer and return the optimised buffer
     // and the info of the image
-    const { buffer, info } = await optimize(originalFileBuffer, this.options)
+    const { buffer, info } = await optimize(this.buffer!, this.options)
 
     // Override the `imageInfo` object with the optimised `info` object
     // As the optimised `info` object is preferred
@@ -343,8 +323,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     }
 
     /**
-     * Read the original temporary file from disk and optimise the file while
-     * return the enhanced buffer and information of the enhanced buffer
+     * Optimise the original file and return the enhanced buffer and
+     * information of the enhanced buffer
      */
     const enhancedImageData = await this.enhanceFile()
 
@@ -358,6 +338,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
             hash: enhancedImageData.hash,
             options: this.options,
             prefix: 'original',
+            fileName: this.fileName,
           })
         : undefined
 
@@ -379,6 +360,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
      * Inject the name into the `ImageInfo`
      */
     enhancedImageData.name = this.name
+    enhancedImageData.fileName = this.fileName
 
     /**
      * Write the optimised original image to the disk
@@ -431,7 +413,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     const { width, height } = await getDimensions(enhancedImageData.buffer!)
 
     delete enhancedImageData.buffer
-    delete enhancedImageData.path
 
     assign(enhancedImageData, {
       width,
@@ -460,8 +441,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
      * Delete the temporary file
      */
     if (this.buffer) {
-      this.buffer = null
-    } else await this.getDisk().delete(this.path!)
+      this.buffer = undefined
+    }
 
     /**
      * Compute the URL
@@ -537,7 +518,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     /**
      * Iterative URL-computation logic
      */
-    const { path, ...originalAttributes } = this.attributes
+    const { buffer, ...originalAttributes } = this.attributes
     const attachmentData = originalAttributes
     if (attachmentData) {
       if (!this.urls) this.urls = {} as UrlRecords
@@ -602,7 +583,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * for persistence to the database
    */
   public toObject() {
-    const { path, url, ...originalAttributes } = this.attributes
+    const { buffer, url, ...originalAttributes } = this.attributes
 
     return merge(this.options?.keepOriginal ?? true ? originalAttributes : {}, {
       breakpoints: this.breakpoints,

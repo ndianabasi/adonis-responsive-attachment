@@ -28,7 +28,8 @@ const getMergedOptions = function (options: AttachmentOptions): AttachmentOption
 
 export const bytesToKBytes = (bytes: number) => Math.round((bytes / 1000) * 100) / 100
 
-export const getMetaData = async (buffer: Buffer) => await sharp(buffer).metadata()
+export const getMetaData = async (buffer: Buffer) =>
+  await sharp(buffer, { failOnError: false }).metadata()
 
 export const getDimensions = async function (buffer: Buffer): Promise<FileDimensions> {
   return await getMetaData(buffer).then(({ width, height }) => ({ width, height }))
@@ -49,8 +50,8 @@ export const resizeTo = async function (
   resizeOptions: sharp.ResizeOptions
 ) {
   const sharpInstance = options?.forceFormat
-    ? sharp(buffer).toFormat(options.forceFormat)
-    : sharp(buffer)
+    ? sharp(buffer, { failOnError: false }).toFormat(options.forceFormat)
+    : sharp(buffer, { failOnError: false })
 
   return await sharpInstance
     .withMetadata()
@@ -105,6 +106,7 @@ export const generateBreakpoint = async ({
       hash: imageData.hash,
       options,
       prefix: key as keyof ImageBreakpoints,
+      fileName: imageData.fileName,
     })
 
     return {
@@ -137,18 +139,20 @@ export const generateBreakpoint = async ({
  */
 export const generateName = function ({
   extname,
+  fileName,
   hash,
   prefix,
   options,
 }: {
   extname?: string
+  fileName?: string
   hash?: string
   prefix?: keyof ImageBreakpoints | 'original'
   options?: AttachmentOptions
 }): string {
-  return `${options?.folder ? `${options.folder}/` : ''}${prefix ? prefix + '_' : ''}${
-    hash ? hash : cuid()
-  }.${extname}`
+  return `${options?.folder ? `${options.folder}/` : ''}${prefix ? `${prefix}_` : ''}${
+    fileName ? `${fileName}_` : ''
+  }${hash ? hash : cuid()}.${extname}`
 }
 
 export const optimize = async function (
@@ -163,7 +167,9 @@ export const optimize = async function (
   }
 
   // Auto rotate the image if `optimizeOrientation` is true
-  let sharpInstance = optimizeOrientation ? sharp(buffer).rotate() : sharp(buffer)
+  let sharpInstance = optimizeOrientation
+    ? sharp(buffer, { failOnError: false }).rotate()
+    : sharp(buffer, { failOnError: false })
 
   // Force image to output to a specific format if `forceFormat` is true
   sharpInstance = forceFormat ? sharpInstance.toFormat(forceFormat) : sharpInstance
@@ -225,6 +231,7 @@ export const generateThumbnail = async function (
         hash: imageData.hash,
         options,
         prefix: 'thumbnail',
+        fileName: imageData.fileName,
       })
 
       return {

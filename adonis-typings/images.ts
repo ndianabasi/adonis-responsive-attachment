@@ -17,6 +17,7 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
 
   export type ImageInfo = {
     name?: string
+    fileName?: string
     hash?: string
     extname?: string
     mimeType?: string
