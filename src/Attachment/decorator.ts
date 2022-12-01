@@ -9,14 +9,14 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
+import { merge } from 'lodash'
+import { ResponsiveAttachment } from './index'
 import type { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import type {
   AttachmentOptions,
   ResponsiveAttachmentContract,
   ResponsiveAttachmentDecorator,
 } from '@ioc:Adonis/Addons/ResponsiveAttachment'
-
-import { ResponsiveAttachment } from './index'
 
 /**
  * Default breakpoint options
@@ -35,8 +35,8 @@ async function persistAttachment(
   property: string,
   options?: AttachmentOptions
 ) {
-  const existingFile = modelInstance.$original[property] as ResponsiveAttachmentContract
-  const newFile = modelInstance[property] as ResponsiveAttachmentContract
+  const existingFile = modelInstance.$original[property] as ResponsiveAttachment
+  const newFile = modelInstance[property] as ResponsiveAttachment
 
   /**
    * Skip when the attachment property hasn't been updated
@@ -50,7 +50,7 @@ async function persistAttachment(
    * remove the existing file.
    */
   if (existingFile && !newFile) {
-    existingFile.setOptions(options)
+    existingFile.setOptions(merge(options, existingFile.options))
     modelInstance['attachments'].detached.push(existingFile)
     return
   }
@@ -60,14 +60,14 @@ async function persistAttachment(
    * file.
    */
   if (newFile && newFile.isLocal) {
-    newFile.setOptions(options)
+    newFile.setOptions(merge(options, newFile.options))
     modelInstance['attachments'].attached.push(newFile)
 
     /**
      * If there was an existing file, then we must get rid of it
      */
     if (existingFile) {
-      existingFile.setOptions(options)
+      existingFile.setOptions(merge(options, existingFile.options))
       modelInstance['attachments'].detached.push(existingFile)
     }
 

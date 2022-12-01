@@ -13,13 +13,14 @@ import test from 'japa'
 import { join } from 'path'
 import supertest from 'supertest'
 import { createServer } from 'http'
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { BodyParserMiddleware } from '@adonisjs/bodyparser/build/src/BodyParser'
-import { getDimensions } from '../src/Helpers/ImageManipulationHelper'
-
-import { ResponsiveAttachment } from '../src/Attachment'
-import { setup, cleanup, setupApplication } from '../test-helpers'
 import { readFile } from 'fs/promises'
+import { ResponsiveAttachment } from '../src/Attachment/index'
+import { setup, cleanup, setupApplication } from '../test-helpers'
+import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import { responsiveAttachment as Attachment } from '../src/Attachment/decorator'
+import { getDimensions } from '../src/Helpers/ImageManipulationHelper'
+import { BodyParserMiddleware } from '@adonisjs/bodyparser/build/src/BodyParser'
+import { ResponsiveAttachmentContract } from '@ioc:Adonis/Addons/ResponsiveAttachment'
 
 let app: ApplicationContract
 
@@ -1364,5 +1365,45 @@ test.group('Do not generate save original image when `options.keepOriginal` is f
     assert.notExists(body.extname)
     assert.notExists(body.mimeType)
     assert.notExists(body.url)
+  })
+
+  test('change the folder for an upload at run-time', async (assert) => {
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        class User extends BaseModel {
+          @column({ isPrimary: true })
+          public id: string
+
+          @column()
+          public username: string
+
+          @Attachment({ folder: 'a' })
+          public avatar: ResponsiveAttachmentContract | null
+        }
+
+        const file = ctx.request.file('avatar')!
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromFile(file)
+        user.avatar.setOptions({ folder: 'a/b/c' })
+        await user.save()
+
+        assert.include(user.avatar?.name!, 'a/b/c')
+        assert.include(user.avatar?.breakpoints?.thumbnail.name!, 'a/b/c')
+        assert.include(user.avatar?.breakpoints?.small.name!, 'a/b/c')
+        assert.include(user.avatar?.breakpoints?.medium.name!, 'a/b/c')
+        assert.include(user.avatar?.breakpoints?.large.name!, 'a/b/c')
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
   })
 })

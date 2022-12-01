@@ -157,7 +157,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   /**
    * Attachment options
    */
-  private options?: AttachmentOptions
+  public options?: AttachmentOptions
 
   /**
    * The generated name of the original file.
@@ -296,6 +296,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       },
       options
     )
+
     return this
   }
 
