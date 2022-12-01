@@ -706,20 +706,6 @@ post.coverImage.breakpoints.large.url // computed as a signed URL
 posts.coverImage.urls // computed as an object containing all signed URLs
 ```
 
-## Generating URLs for the API response
-
-The Drive API methods for generating URLs are asynchronous, whereas serializing a model to JSON is synchronous. Therefore, it is not to create URLs at the time of serializing a model.
-
-```ts
-// ❌ Does not work
-
-const users = await Post.all()
-users.map((post) => {
-  post.coverImage.url = await post.coverImage.getUrls()
-  return post
-})
-```
-
 To address this use case, you can opt for pre-computing URLs
 
 ### Pre-Compute URLs on Demand
