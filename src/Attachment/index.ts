@@ -531,7 +531,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         let url: string
 
         if (key === 'name') {
-          if (this.options?.keepOriginal === false) {
+          if ((this.options?.keepOriginal ?? true) === false || !this.name) {
             continue
           }
 
