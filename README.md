@@ -126,6 +126,8 @@ There are two ways to create responsive attachments with the `Adonis Responsive 
 
     The `fromBuffer` method creates responsive images from (image) buffers. These images buffers can come from any source you prefer as long as they are of type `Buffer`. This allows you to create responsive images from outside the HTTP life-cycle. The `fromBuffer` method accepts one parameter which must be a `Buffer`.
 
+Both methods allow you to provide an optional file name as the second parameter. This replaces the use of input file name from the uploaded file. The add-on will replace all non-numeric and non-alphabet characters in the file name with the underscore character.
+
 The example below shows the use of the `fromFile` static method.
 
 ```ts
@@ -136,7 +138,7 @@ class PostsController {
     const coverImage = request.file('coverImage')!
     const post = new Post()
 
-    post.coverImage = coverImage ? await ResponsiveAttachment.fromFile(coverImage) : null
+    post.coverImage = coverImage ? await ResponsiveAttachment.fromFile(coverImage, 'My Great Name') : null
     await post.save()
   }
 }
@@ -151,7 +153,7 @@ class UsersController {
   public store() {
     const buffer = await readFile(join(__dirname, '../me.jpeg'))
     const user = new User()
-    user.avatar = await ResponsiveAttachment.fromBuffer(buffer)
+    user.avatar = await ResponsiveAttachment.fromBuffer(buffer, 'Awesome File Name')
     await user.save()
   }
 }

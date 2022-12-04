@@ -62,7 +62,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Create attachment instance from the bodyparser
    * file
    */
-  public static async fromFile(file: MultipartFileContract) {
+  public static async fromFile(file: MultipartFileContract, fileName?: string) {
     if (!file) {
       throw new SyntaxError('You should provide a non-falsy value')
     }
@@ -80,14 +80,13 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     // Get the file buffer
     const buffer = await readFile(file.tmpPath)
 
-    let fileNameArray = file.clientName.split('.')
-    const fileName = fileNameArray.slice(0, fileNameArray.length - 1).join('.')
+    const computedFileName = fileName ? fileName : file.fieldName
 
     const attributes = {
       extname: file.extname!,
       mimeType: `${file.type}/${file.subtype}`,
       size: file.size,
-      fileName,
+      fileName: computedFileName.replace(/[^\d\w]+/g, '_').toLowerCase(),
     }
 
     return new ResponsiveAttachment(attributes, buffer) as ResponsiveAttachmentContract
@@ -126,7 +125,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
           extname: ext,
           mimeType: mime,
           size: buffer.length,
-          fileName: name,
+          fileName: name?.replace(/[^\d\w]+/g, '_')?.toLowerCase() ?? '',
         }
 
         return resolve(new ResponsiveAttachment(attributes, buffer) as ResponsiveAttachmentContract)
@@ -246,7 +245,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.breakpoints = attributes.breakpoints ?? undefined
     this.fileName = attributes.fileName ?? ''
     this.isLocal = !!this.buffer
-    this.fileName = attributes.fileName
   }
 
   public get attributes() {

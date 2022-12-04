@@ -1648,7 +1648,7 @@ test.group('Other checks', (group) => {
     assert.isDefined(avatar!.breakpoints!.small.url)
   })
 
-  test.only('should not include original attributes and url when "keepOriginal" is "false"', async (assert) => {
+  test('should not include original attributes and url when "keepOriginal" is "false"', async (assert) => {
     const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
 
     class User extends BaseModel {
@@ -1671,6 +1671,7 @@ test.group('Other checks', (group) => {
         user.username = 'Ndianabasi'
         user.avatar = await ResponsiveAttachment.fromFile(file)
         await user.save()
+        await user.refresh()
 
         ctx.response.send(user)
         ctx.response.finish()
@@ -1698,5 +1699,84 @@ test.group('Other checks', (group) => {
     assert.isDefined(avatar!.breakpoints!.large.url)
     assert.isDefined(avatar!.breakpoints!.medium.url)
     assert.isDefined(avatar!.breakpoints!.small.url)
+  })
+
+  test('accept custom file name in the "fromFile" method', async (assert) => {
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        class User extends BaseModel {
+          @column({ isPrimary: true })
+          public id: string
+
+          @column()
+          public username: string
+
+          @Attachment()
+          public avatar: ResponsiveAttachmentContract | null
+        }
+
+        const file = ctx.request.file('avatar')!
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromFile(file, 'Ndianabasi Udonkang')
+        await user.save()
+
+        assert.include(user.avatar?.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.thumbnail.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.small.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.medium.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.large.name!, 'ndianabasi_udonkang')
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+  })
+
+  test.only('accept custom file name in the "fromBuffer" method', async (assert) => {
+    const server = createServer((req, res) => {
+      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        class User extends BaseModel {
+          @column({ isPrimary: true })
+          public id: string
+
+          @column()
+          public username: string
+
+          @Attachment()
+          public avatar: ResponsiveAttachmentContract | null
+        }
+
+        const readableStream = await readFile(
+          join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg')
+        )
+
+        const user = new User()
+        user.username = 'Ndianabasi'
+        user.avatar = await ResponsiveAttachment.fromBuffer(readableStream, 'Ndianabasi Udonkang')
+        await user.save()
+
+        assert.include(user.avatar?.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.thumbnail.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.small.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.medium.name!, 'ndianabasi_udonkang')
+        assert.include(user.avatar?.breakpoints?.large.name!, 'ndianabasi_udonkang')
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    await supertest(server).post('/')
   })
 })
