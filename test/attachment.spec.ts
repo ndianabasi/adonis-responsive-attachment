@@ -1740,7 +1740,7 @@ test.group('Other checks', (group) => {
       .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
   })
 
-  test.only('accept custom file name in the "fromBuffer" method', async (assert) => {
+  test('accept custom file name in the "fromBuffer" method', async (assert) => {
     const server = createServer((req, res) => {
       const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
       const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
