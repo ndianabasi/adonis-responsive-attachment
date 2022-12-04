@@ -1607,7 +1607,7 @@ test.group('Other checks', (group) => {
       @column()
       public username: string
 
-      @Attachment({ folder: 'a' })
+      @Attachment()
       public avatar: ResponsiveAttachmentContract | null
     }
 
@@ -1631,21 +1631,13 @@ test.group('Other checks', (group) => {
       .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
 
     const createdUser = await User.findOrFail(response.body.id)
-    let avatar = createdUser.toJSON().avatar
-    assert.isUndefined(avatar!.url)
-    assert.isUndefined(avatar!.breakpoints!.thumbnail.url)
-    assert.isUndefined(avatar!.breakpoints!.large.url)
-    assert.isUndefined(avatar!.breakpoints!.medium.url)
-    assert.isUndefined(avatar!.breakpoints!.small.url)
+    const urls = await createdUser.avatar!.getUrls()
 
-    await createdUser.avatar!.getUrls()
-    avatar = createdUser.toJSON().avatar
-
-    assert.isDefined(avatar!.url)
-    assert.isDefined(avatar!.breakpoints!.thumbnail.url)
-    assert.isDefined(avatar!.breakpoints!.large.url)
-    assert.isDefined(avatar!.breakpoints!.medium.url)
-    assert.isDefined(avatar!.breakpoints!.small.url)
+    assert.isDefined(urls!.url)
+    assert.isDefined(urls!.breakpoints!.thumbnail.url)
+    assert.isDefined(urls!.breakpoints!.large.url)
+    assert.isDefined(urls!.breakpoints!.medium.url)
+    assert.isDefined(urls!.breakpoints!.small.url)
   })
 
   test('should not include original attributes and url when "keepOriginal" is "false"', async (assert) => {

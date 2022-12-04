@@ -676,36 +676,34 @@ Pre-computation stores a JSON with `url` properties for the original and respons
 
 ### Using the `ResponsiveAttachment.getUrls` Method
 
-If you manually generate signed or un-signed URLs for a given image attachment using the `getUrls` method. This method calls the `ResponsiveAttachment.preComputeUrls` method internally to compute the URLs of original and responsive images and returns the result as an object containing the various URLs. It also adds the URLs to the `this.url` and `this.breakpoints` properties so that you can access the URLs normally when you serialise the result as JSON.
+If you manually generate signed or un-signed URLs for a given image attachment using the `getUrls` method. This method calls the `ResponsiveAttachment.preComputeUrls` method internally to compute the URLs of original and responsive images and returns the result as an object containing the various URLs. Please note that `getUrls` will not merge the returned URLs into the image attachment object. `getUrls` could be useful when you want to return just the URLs of the image attachment, that is, you do not want to return the parent model of the attachment column.
 
 ```ts
 // For unsigned URLs, do not pass in any options
-await post.coverImage.getUrls()
+const urls = await post.coverImage.getUrls()
 // After
-post.coverImage.url // computed
-post.coverImage.breakpoints.thumbnail.url // computed
-post.coverImage.breakpoints.small.url // computed
-post.coverImage.breakpoints.medium.url // computed
-post.coverImage.breakpoints.large.url // computed
-posts.coverImage.urls // computed
+urls.url // computed
+urls.breakpoints.thumbnail.url // computed
+urls.breakpoints.small.url // computed
+urls.breakpoints.medium.url // computed
+urls.breakpoints.large.url // computed
 ```
 
 ```ts
 // For signed URLs, you can pass in signing options.
 // See the options at: https://docs.adonisjs.com/guides/drive#getsignedurl
-await post.coverImage.getUrls({ expiresIn: '30mins' })
+const urls = await post.coverImage.getUrls({ expiresIn: '30mins' })
 // or
-await post.coverImage.getUrls({
+const urls = await post.coverImage.getUrls({
   contentType: 'application/json',
   contentDisposition: 'attachment',
 })
 // After
-post.coverImage.url // computed as a signed URL
-post.coverImage.breakpoints.thumbnail.url // computed as a signed URL
-post.coverImage.breakpoints.small.url // computed as a signed URL
-post.coverImage.breakpoints.medium.url // computed as a signed URL
-post.coverImage.breakpoints.large.url // computed as a signed URL
-posts.coverImage.urls // computed as an object containing all signed URLs
+urls.url // computed as a signed URL
+urls.breakpoints.thumbnail.url // computed as a signed URL
+urls.breakpoints.small.url // computed as a signed URL
+urls.breakpoints.medium.url // computed as a signed URL
+urls.breakpoints.large.url // computed as a signed URL
 ```
 
 To address this use case, you can opt for pre-computing URLs

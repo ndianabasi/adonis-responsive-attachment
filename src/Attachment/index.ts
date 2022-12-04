@@ -523,13 +523,18 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       if (!this.urls) this.urls = {} as UrlRecords
 
       for (const key in attachmentData) {
-        if (['name', 'breakpoints'].includes(key) === false) continue
+        if (['name', 'breakpoints'].includes(key) === false) {
+          continue
+        }
 
-        const value = attachmentData[key]
+        const value: string | ImageBreakpoints = attachmentData[key]
         let url: string
 
-        if (key === 'name' && !!this.options?.keepOriginal) {
-          if (!(this.options?.keepOriginal ?? true)) continue
+        if (key === 'name') {
+          if (this.options?.keepOriginal === false) {
+            continue
+          }
+
           const name = value as string
 
           const imageVisibility = await disk.getVisibility(name)
@@ -541,13 +546,21 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
           this.urls['url'] = url
           this.url = url
-        } else if (key === 'breakpoints') {
-          if (isEmpty(value) !== true) {
-            if (!this.urls.breakpoints) this.urls.breakpoints = {} as ImageBreakpoints
+        }
 
-            for (const breakpoint in value) {
-              if (Object.prototype.hasOwnProperty.call(value, breakpoint)) {
-                const breakpointImageData: Exclude<ImageInfo, 'breakpoints'> = value?.[breakpoint]
+        if (key === 'breakpoints') {
+          if (isEmpty(value) === false) {
+            if (!this.urls.breakpoints) {
+              this.urls.breakpoints = {} as ImageBreakpoints
+            }
+
+            const breakpoints = value as ImageBreakpoints
+
+            for (const breakpoint in breakpoints) {
+              if (Object.prototype.hasOwnProperty.call(breakpoints, breakpoint)) {
+                const breakpointImageData: Exclude<ImageInfo, 'breakpoints'> =
+                  breakpoints?.[breakpoint]
+
                 if (breakpointImageData) {
                   const imageVisibility = await disk.getVisibility(breakpointImageData.name!)
                   if (imageVisibility === 'private') {
