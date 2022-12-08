@@ -11,6 +11,7 @@
 
 import { merge } from 'lodash'
 import { ResponsiveAttachment } from './index'
+import type { LoggerContract } from '@ioc:Adonis/Core/Logger'
 import type { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import type {
   AttachmentOptions,
@@ -190,7 +191,12 @@ async function afterFind(modelInstance: LucidRow) {
           ;(modelInstance[attachmentField.property] as ResponsiveAttachment).setOptions(
             attachmentField.options
           )
-          return (modelInstance[attachmentField.property] as ResponsiveAttachment).computeUrls()
+          return (modelInstance[attachmentField.property] as ResponsiveAttachment)
+            .computeUrls()
+            .catch((error) => {
+              const logger: LoggerContract = modelInstance[attachmentField.property].loggerInstance
+              logger.error('Adonis Responsive Attachment error: %o', error)
+            })
         }
       }
     )

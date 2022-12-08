@@ -26,9 +26,10 @@ export default class ResponsiveAttachmentProvider {
 
   public boot() {
     this.application.container.withBindings(
-      ['Adonis/Addons/ResponsiveAttachment', 'Adonis/Core/Drive'],
-      (ResponsiveAttachmentAddon, Drive) => {
+      ['Adonis/Addons/ResponsiveAttachment', 'Adonis/Core/Drive', 'Adonis/Core/Logger'],
+      (ResponsiveAttachmentAddon, Drive, Logger) => {
         ResponsiveAttachmentAddon.ResponsiveAttachment.setDrive(Drive)
+        ResponsiveAttachmentAddon.ResponsiveAttachment.setLogger(Logger)
       }
     )
   }

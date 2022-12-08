@@ -9,6 +9,7 @@
 
 declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
   import { ColumnOptions } from '@ioc:Adonis/Lucid/Orm'
+  import { LoggerContract } from '@ioc:Adonis/Core/Logger'
   import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
   import {
     DisksList,
@@ -171,7 +172,7 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
      * Convert attachment to JSON object to be sent over
      * the wire
      */
-    toJSON(): (AttachmentAttributes & (UrlRecords | undefined)) | null
+    toJSON(): (AttachmentAttributes & (UrlRecords | null)) | null
   }
 
   /**
@@ -194,6 +195,8 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     fromBuffer(buffer: Buffer, fileName?: string): Promise<ResponsiveAttachmentContract>
     getDrive(): DriveManagerContract
     setDrive(drive: DriveManagerContract): void
+    setLogger(logger: LoggerContract): void
+    getLogger(): LoggerContract
   }
 
   export const responsiveAttachment: ResponsiveAttachmentDecorator
