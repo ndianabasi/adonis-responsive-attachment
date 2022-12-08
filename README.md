@@ -745,6 +745,26 @@ await Post.preComputeUrls(post)
 
 return post
 ```
+
+### Error Handling
+
+If you are using the Adonis Responsive Attachment with remote file storage services like Amazon S3, there would be occasions where your application will encounter errors from the remote service. Errors such as 404 errors when the image file is not found (maybe, due to expiration) is very common. The add-on gracefully handles such errors internally and logs the complete error object to the console via the Adonis Logger. Without error handling, the entire HTTP request will be aborted which leads to very poor experience for your users.
+
+If you had directly called the `computeUrls` method within your application, you should implement error handling around those calls. For example:
+
+```typescript
+  public static async preComputeUrls(models: UserProfile | UserProfile[]) {
+    if (Array.isArray(models)) {
+      await Promise.all(models.map((model) => this.preComputeUrls(model)))
+      return
+    }
+
+    // Error handling around the `computeUrls` call
+    await models.profile_picture_2?.computeUrls().catch((error) => {
+      Logger.error('User Profile Picture error: %o', error)
+    })
+  }
+```
  
 [github-actions-image]: https://img.shields.io/github/workflow/status/ndianabasi/adonis-responsive-attachment/test?style=for-the-badge
 [github-actions-url]: https://github.com/ndianabasi/adonis-responsive-attachment/actions/workflows/test.yml "github-actions"
