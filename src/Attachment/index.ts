@@ -14,8 +14,9 @@ import { readFile } from 'fs/promises'
 import { DEFAULT_BREAKPOINTS } from './decorator'
 import { cuid } from '@poppinss/utils/build/helpers'
 import { merge, isEmpty, assign, set } from 'lodash'
+import { LoggerContract } from '@ioc:Adonis/Core/Logger'
 import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
-import { DriveManagerContract, ContentHeaders } from '@ioc:Adonis/Core/Drive'
+import { DriveManagerContract, ContentHeaders, Visibility } from '@ioc:Adonis/Core/Drive'
 import {
   allowedFormats,
   generateBreakpointImages,
@@ -43,6 +44,7 @@ export const tempUploadFolder = 'image_upload_tmp'
  */
 export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   private static drive: DriveManagerContract
+  private static logger: LoggerContract
 
   /**
    * Reference to the drive
@@ -56,6 +58,20 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    */
   public static setDrive(drive: DriveManagerContract) {
     this.drive = drive
+  }
+
+  /**
+   * Set the logger instance
+   */
+  public static setLogger(logger: LoggerContract) {
+    this.logger = logger
+  }
+
+  /**
+   * Reference to the logger instance
+   */
+  public static getLogger() {
+    return this.logger
   }
 
   /**
@@ -279,6 +295,13 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   }
 
   /**
+   * Returns disk instance
+   */
+  private get loggerInstance() {
+    return (this.constructor as AttachmentConstructorContract).getLogger()
+  }
+
+  /**
    * Define persistance options
    */
   public setOptions(options?: AttachmentOptions) {
@@ -446,7 +469,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     /**
      * Compute the URL
      */
-    await this.computeUrls()
+    await this.computeUrls().catch((error) => {
+      this.loggerInstance.error('Adonis Responsive Attachment error: %o', error)
+    })
 
     return this
   }
@@ -501,17 +526,23 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
      * Generate url using the user defined preComputeUrls method
      */
     if (typeof this.options?.preComputeUrls === 'function') {
-      const urls = await this.options.preComputeUrls(disk, this)
-      this.url = urls.url
-      if (!this.urls) this.urls = {} as UrlRecords
-      if (!this.urls.breakpoints) this.urls.breakpoints = {} as ImageBreakpoints
-      for (const key in urls.breakpoints) {
-        if (Object.prototype.hasOwnProperty.call(urls.breakpoints, key)) {
-          if (!this.urls.breakpoints[key]) this.urls.breakpoints[key] = { url: '' }
-          this.urls.breakpoints[key].url = urls.breakpoints[key].url
+      const urls = await this.options.preComputeUrls(disk, this).catch((error) => {
+        this.loggerInstance.error('Adonis Responsive Attachment error: %o', error)
+        return null
+      })
+
+      if (urls) {
+        this.url = urls.url
+        if (!this.urls) this.urls = {} as UrlRecords
+        if (!this.urls.breakpoints) this.urls.breakpoints = {} as ImageBreakpoints
+        for (const key in urls.breakpoints) {
+          if (Object.prototype.hasOwnProperty.call(urls.breakpoints, key)) {
+            if (!this.urls.breakpoints[key]) this.urls.breakpoints[key] = { url: '' }
+            this.urls.breakpoints[key].url = urls.breakpoints[key].url
+          }
         }
+        return this.urls
       }
-      return this.urls
     }
 
     /**
@@ -537,7 +568,14 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
           const name = value as string
 
-          const imageVisibility = await disk.getVisibility(name)
+          let imageVisibility: Visibility
+          try {
+            imageVisibility = await disk.getVisibility(name)
+          } catch (error) {
+            this.loggerInstance.error('Adonis Responsive Attachment error: %s', error)
+            continue
+          }
+
           if (imageVisibility === 'private') {
             url = await disk.getSignedUrl(name, signedUrlOptions || undefined)
           } else {
@@ -587,7 +625,10 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Returns the signed or unsigned URL for each responsive image
    */
   public async getUrls(signingOptions?: ContentHeaders & { expiresIn?: string | number }) {
-    return this.computeUrls({ ...signingOptions })
+    return this.computeUrls({ ...signingOptions }).catch((error) => {
+      this.loggerInstance.error('Adonis Responsive Attachment error: %o', error)
+      return undefined
+    })
   }
 
   /**
