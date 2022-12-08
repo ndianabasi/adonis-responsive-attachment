@@ -35,7 +35,6 @@ const samplePersistedImageData = {
   height: 1000,
   extname: 'jpg',
   mimeType: 'image/jpeg',
-  url: '/uploads/original_ckw5lpv7v0002egvobe1b0oav.jpg?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvb3JpZ2luYWxfY2t3NWxwdjd2MDAwMmVndm9iZTFiMG9hdi5qcGcifQ.ieXMlaRb8izlREvJ0E9iMY0I3iedalmv-pvOUIrfEZc',
   breakpoints: {
     thumbnail: {
       name: 'thumbnail_ckw5lpv7v0002egvobe1b0oav.jpg',
@@ -45,7 +44,6 @@ const samplePersistedImageData = {
       width: 234,
       height: 156,
       size: 7.96,
-      url: '/uploads/thumbnail_ckw5lpv7v0002egvobe1b0oav.jpg?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvdGh1bWJuYWlsX2NrdzVscHY3djAwMDJlZ3ZvYmUxYjBvYXYuanBnIn0.RGGimHh6NuyPrB2ZgmudE7rH4RRCT3NL7kex9EmSyIo',
     },
     large: {
       name: 'large_ckw5lpv7v0002egvobe1b0oav.jpg',
@@ -55,7 +53,6 @@ const samplePersistedImageData = {
       width: 1000,
       height: 667,
       size: 129.15,
-      url: '/uploads/large_ckw5lpv7v0002egvobe1b0oav.jpg?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvbGFyZ2VfY2t3NWxwdjd2MDAwMmVndm9iZTFiMG9hdi5qcGcifQ.eNC8DaqYCYd4khKhqS7DKI66SsLpD-vyVIaP8rzMmAA',
     },
     medium: {
       name: 'medium_ckw5lpv7v0002egvobe1b0oav.jpg',
@@ -65,7 +62,6 @@ const samplePersistedImageData = {
       width: 750,
       height: 500,
       size: 71.65,
-      url: '/uploads/medium_ckw5lpv7v0002egvobe1b0oav.jpg?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvbWVkaXVtX2NrdzVscHY3djAwMDJlZ3ZvYmUxYjBvYXYuanBnIn0.2ADmssxFC0vxmq4gJEgjb9Fxo1qcQ6tMVeKBqZ1ENkM',
     },
     small: {
       name: 'small_ckw5lpv7v0002egvobe1b0oav.jpg',
@@ -75,7 +71,6 @@ const samplePersistedImageData = {
       width: 500,
       height: 333,
       size: 32.21,
-      url: '/uploads/small_ckw5lpv7v0002egvobe1b0oav.jpg?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvc21hbGxfY2t3NWxwdjd2MDAwMmVndm9iZTFiMG9hdi5qcGcifQ.I8fwMRwY5azvlS_8B0K40BWKQNLuS-HqCB_3RXryOok',
     },
   },
 }
@@ -149,26 +144,23 @@ test.group('ResponsiveAttachment | fromDbResponse', (group) => {
 
     responsiveAttachment?.setOptions({ preComputeUrls: true })
 
-    await responsiveAttachment?.computeUrls()
+    const urls = await responsiveAttachment?.getUrls()
 
+    assert.match(urls?.url!, /\/uploads\/original_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/)
     assert.match(
-      responsiveAttachment?.url!,
-      /\/uploads\/original_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
-    )
-    assert.match(
-      responsiveAttachment?.breakpoints?.thumbnail.url!,
+      urls?.breakpoints?.thumbnail.url!,
       /\/uploads\/thumbnail_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
     assert.match(
-      responsiveAttachment?.breakpoints?.small.url!,
+      urls?.breakpoints?.small.url!,
       /\/uploads\/small_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
     assert.match(
-      responsiveAttachment?.breakpoints?.large.url!,
+      urls?.breakpoints?.large.url!,
       /\/uploads\/large_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
     assert.match(
-      responsiveAttachment?.breakpoints?.medium.url!,
+      urls?.breakpoints?.medium.url!,
       /\/uploads\/medium_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
   })
@@ -181,14 +173,24 @@ test.group('ResponsiveAttachment | fromDbResponse', (group) => {
     responsiveAttachment?.setOptions({
       preComputeUrls: async (_, image: ResponsiveAttachment) => {
         return {
-          url: `/custom_folder${image.url!}`,
+          url: `/custom_folder/${image.name!}?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvb3JpZ2luYWxfY2t3NWxwdjd2MDAwMmVndm9iZTFiMG9hdi5qcGcifQ.ieXMlaRb8izlREvJ0E9iMY0I3iedalmv-pvOUIrfEZc`,
           breakpoints: {
             thumbnail: {
-              url: `/custom_folder${image.breakpoints?.thumbnail.url!}`,
+              url: `/custom_folder/${image.breakpoints?.thumbnail
+                .name!}?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvdGh1bWJuYWlsX2NrdzVscHY3djAwMDJlZ3ZvYmUxYjBvYXYuanBnIn0.RGGimHh6NuyPrB2ZgmudE7rH4RRCT3NL7kex9EmSyIo`,
             },
-            small: { url: `/custom_folder${image.breakpoints?.small.url!}` },
-            medium: { url: `/custom_folder${image.breakpoints?.medium.url!}` },
-            large: { url: `/custom_folder${image.breakpoints?.large.url!}` },
+            small: {
+              url: `/custom_folder/${image.breakpoints?.small
+                .name!}?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvbGFyZ2VfY2t3NWxwdjd2MDAwMmVndm9iZTFiMG9hdi5qcGcifQ.eNC8DaqYCYd4khKhqS7DKI66SsLpD-vyVIaP8rzMmAA`,
+            },
+            medium: {
+              url: `/custom_folder/${image.breakpoints?.medium
+                .name!}?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvbWVkaXVtX2NrdzVscHY3djAwMDJlZ3ZvYmUxYjBvYXYuanBnIn0.2ADmssxFC0vxmq4gJEgjb9Fxo1qcQ6tMVeKBqZ1ENkM`,
+            },
+            large: {
+              url: `/custom_folder/${image.breakpoints?.large
+                .name!}?signature=eyJtZXNzYWdlIjoiL3VwbG9hZHMvc21hbGxfY2t3NWxwdjd2MDAwMmVndm9iZTFiMG9hdi5qcGcifQ.I8fwMRwY5azvlS_8B0K40BWKQNLuS-HqCB_3RXryOok`,
+            },
           },
         }
       },
@@ -198,19 +200,19 @@ test.group('ResponsiveAttachment | fromDbResponse', (group) => {
 
     assert.match(
       responsiveAttachment?.url!,
-      /\/custom_folder\/uploads\/original_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
+      /\/custom_folder\/original_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
     assert.match(
       responsiveAttachment?.urls?.breakpoints?.small.url!,
-      /\/custom_folder\/uploads\/small_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
+      /\/custom_folder\/small_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
     assert.match(
       responsiveAttachment?.urls?.breakpoints?.large.url!,
-      /\/custom_folder\/uploads\/large_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
+      /\/custom_folder\/large_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
     assert.match(
       responsiveAttachment?.urls?.breakpoints?.medium.url!,
-      /\/custom_folder\/uploads\/medium_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
+      /\/custom_folder\/medium_ckw5lpv7v0002egvobe1b0oav\.jpg\?signature=/
     )
   })
 })
