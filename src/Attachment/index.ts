@@ -307,13 +307,16 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public setOptions(options?: AttachmentOptions) {
     this.options = merge(
       {
-        preComputeUrls: false,
-        keepOriginal: true,
-        breakpoints: DEFAULT_BREAKPOINTS,
-        forceFormat: undefined,
-        optimizeOrientation: true,
-        optimizeSize: true,
-        responsiveDimensions: true,
+        preComputeUrls: this.options?.preComputeUrls ?? true,
+        keepOriginal: this.options?.keepOriginal ?? true,
+        breakpoints: this.options?.breakpoints ?? DEFAULT_BREAKPOINTS,
+        forceFormat: this.options?.forceFormat,
+        optimizeOrientation: this.options?.optimizeOrientation ?? true,
+        optimizeSize: this.options?.optimizeSize ?? true,
+        responsiveDimensions: this.options?.responsiveDimensions ?? true,
+        disableThumbnail: this.options?.disableThumbnail ?? false,
+        folder: this.options?.folder,
+        disk: this.options?.disk,
       },
       options
     )
