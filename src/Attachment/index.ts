@@ -155,8 +155,18 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Create attachment instance from the database response
    */
   public static fromDbResponse(response: string | ImageAttributes) {
-    const attributes =
-      typeof response === 'string' ? (JSON.parse(response) as ResponsiveAttachment) : response
+    let attributes: ImageAttributes | null = null
+
+    if (typeof response === 'string') {
+      try {
+        attributes = JSON.parse(response) as ImageAttributes
+      } catch (error) {
+        ResponsiveAttachment.logger.warn('Incompatible image data skipped: %s', response)
+        attributes = null
+      }
+    } else {
+      attributes = response as ImageAttributes
+    }
 
     if (!attributes) return null
 
