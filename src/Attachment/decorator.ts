@@ -191,12 +191,17 @@ async function afterFind(modelInstance: LucidRow) {
           ;(modelInstance[attachmentField.property] as ResponsiveAttachment).setOptions(
             attachmentField.options
           )
-          return (modelInstance[attachmentField.property] as ResponsiveAttachment)
-            .computeUrls()
-            .catch((error) => {
-              const logger: LoggerContract = modelInstance[attachmentField.property].loggerInstance
-              logger.error('Adonis Responsive Attachment error: %o', error)
-            })
+          if (modelInstance[attachmentField.property] instanceof ResponsiveAttachment) {
+            return (modelInstance[attachmentField.property] as ResponsiveAttachment)
+              .computeUrls()
+              .catch((error) => {
+                const logger: LoggerContract =
+                  modelInstance[attachmentField.property].loggerInstance
+                logger.error('Adonis Responsive Attachment error: %o', error)
+              })
+          }
+
+          return null
         }
       }
     )
