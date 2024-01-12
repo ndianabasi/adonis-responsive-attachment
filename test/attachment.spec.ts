@@ -1273,7 +1273,7 @@ test.group('ResponsiveAttachment | errors', (group) => {
         } catch (error) {
           assert.equal(
             error.message,
-            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", "gif" and "svg".`
           )
           ctx.response.send(error)
           ctx.response.finish()
@@ -1298,7 +1298,7 @@ test.group('ResponsiveAttachment | errors', (group) => {
         } catch (error) {
           assert.equal(
             error.message,
-            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", "gif" and "svg".`
           )
           ctx.response.send(error)
           ctx.response.finish()

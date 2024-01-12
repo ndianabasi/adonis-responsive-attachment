@@ -85,7 +85,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
     if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
       throw new RangeError(
-        `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+        `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", "gif" and "svg".`
       )
     }
 
@@ -133,7 +133,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
         if (allowedFormats.includes(subtype as AttachmentOptions['forceFormat']) === false) {
           throw new RangeError(
-            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", "gif" and "svg".`
           )
         }
 

@@ -67,17 +67,26 @@ export const resizeTo = async function (
 export const breakpointSmallerThan = (breakpoint: number, { width, height }: FileDimensions) =>
   breakpoint < width! || breakpoint < height!
 
-export const allowedFormats: Array<AttachmentOptions['forceFormat']> = [
+type AllowedFormats = 'jpeg' | 'png' | 'webp' | 'avif' | 'tiff' | 'gif' | 'svg' | 'svg+xml'
+
+// Image formats you can upload
+export const allowedFormats: Array<AllowedFormats> = [
   'jpeg',
   'png',
   'webp',
   'avif',
   'tiff',
+  'gif',
+  'svg',
+  'svg+xml',
 ]
+
+// Formats we want to be safely processed by sharp
+export const conversionFormats: Array<AllowedFormats> = ['jpeg', 'png', 'webp', 'avif', 'tiff']
 
 export const canBeProcessed = async (buffer: Buffer) => {
   const { format } = await getMetaData(buffer)
-  return format && allowedFormats.includes(format as AttachmentOptions['forceFormat'])
+  return format && conversionFormats.includes(format as AllowedFormats)
 }
 
 const getImageExtension = function (imageFormat: ImageInfo['format']) {
