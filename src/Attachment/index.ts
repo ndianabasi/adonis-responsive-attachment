@@ -18,6 +18,7 @@ import { LoggerContract } from '@ioc:Adonis/Core/Logger'
 import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
 import { DriveManagerContract, ContentHeaders, Visibility } from '@ioc:Adonis/Core/Drive'
 import {
+  AllowedFormats,
   allowedFormats,
   generateBreakpointImages,
   generateName,
@@ -83,7 +84,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       throw new SyntaxError('You should provide a non-falsy value')
     }
 
-    if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
+    if (allowedFormats.includes(file?.subtype as AllowedFormats) === false) {
       throw new RangeError(
         `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", "gif" and "svg".`
       )
@@ -131,7 +132,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         const { mime, ext } = bufferProperty!
         const subtype = mime.split('/').pop()
 
-        if (allowedFormats.includes(subtype as AttachmentOptions['forceFormat']) === false) {
+        if (allowedFormats.includes(subtype as AllowedFormats) === false) {
           throw new RangeError(
             `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", "gif" and "svg".`
           )

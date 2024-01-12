@@ -67,7 +67,7 @@ export const resizeTo = async function (
 export const breakpointSmallerThan = (breakpoint: number, { width, height }: FileDimensions) =>
   breakpoint < width! || breakpoint < height!
 
-type AllowedFormats = 'jpeg' | 'png' | 'webp' | 'avif' | 'tiff' | 'gif' | 'svg' | 'svg+xml'
+export type AllowedFormats = 'jpeg' | 'png' | 'webp' | 'avif' | 'tiff' | 'gif' | 'svg' | 'svg+xml'
 
 // Image formats you can upload
 export const allowedFormats: Array<AllowedFormats> = [
