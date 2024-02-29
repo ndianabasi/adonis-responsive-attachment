@@ -52,6 +52,7 @@ export default class ResponsiveAttachmentProvider {
         ResponsiveAttachmentAddon.ResponsiveAttachment.setLogger(Logger)
       }
     )
+
     this.defineValidationRules()
   }
 }

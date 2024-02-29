@@ -3,8 +3,9 @@
  *
  * (c) Ndianabasi Udonkang <ndianabasi@furnish.ng>
  *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with
+ * this source code.
  */
 
 import { readFile } from 'fs/promises'
@@ -28,7 +29,7 @@ enum ImageDimensionsValidationRule {
  * Ensure image is complaint with expected dimensions validations
  */
 class ImageDimensionsCheck {
-  constructor(private ruleName: ImageDimensionsValidationRule) {}
+  constructor(public ruleName: ImageDimensionsValidationRule, protected logger: LoggerContract) {}
 
   /**
    * Compile validation options
@@ -47,7 +48,7 @@ class ImageDimensionsCheck {
   }
 
   /**
-   * Validate value
+   * Validate the file
    */
   public async validate(
     file: MultipartFileContract,
@@ -64,27 +65,46 @@ class ImageDimensionsCheck {
 
     const imageBuffer = await readFile(file.tmpPath)
     const { width, height } = await getMetaData(imageBuffer)
+    const reportError = () => {
+      errorReporter.report(
+        pointer,
+        this.ruleName,
+        `${this.ruleName} validation failure`,
+        arrayExpressionPointer
+      )
+    }
 
     if (this.ruleName === 'minImageWidth') {
       if (!width || width < validationValue) {
-        errorReporter.report(
-          pointer,
-          this.ruleName,
-          `${this.ruleName} validation failure`,
-          arrayExpressionPointer
-        )
+        reportError()
       }
       return
     }
 
     if (this.ruleName === 'minImageHeight') {
       if (!height || height < validationValue) {
-        errorReporter.report(
-          pointer,
-          this.ruleName,
-          `${this.ruleName} validation failure`,
-          arrayExpressionPointer
-        )
+        reportError()
+      }
+      return
+    }
+
+    if (this.ruleName === 'maxImageWidth') {
+      if (!width || width > validationValue) {
+        reportError()
+      }
+      return
+    }
+
+    if (this.ruleName === 'maxImageHeight') {
+      if (!height || height > validationValue) {
+        reportError()
+      }
+      return
+    }
+
+    if (this.ruleName === 'imageAspectRatio') {
+      if (!height || !width || width / height !== validationValue) {
+        reportError()
       }
       return
     }
@@ -93,63 +113,173 @@ class ImageDimensionsCheck {
   }
 }
 
+function throwCatchallError(error: Error) {
+  if (error.message === 'Invalid image validation operation') {
+    throw error
+  }
+}
+
 /**
  * Extends the validator by adding `unique` and `exists`
  */
 export function extendValidator(validator: typeof validatorStatic, logger: LoggerContract) {
-  const minImageWidthChecker = new ImageDimensionsCheck(ImageDimensionsValidationRule.minImageWidth)
+  const minImageWidthRuleChecker = new ImageDimensionsCheck(
+    ImageDimensionsValidationRule.minImageWidth,
+    logger
+  )
 
-  validator.rule<ReturnType<(typeof minImageWidthChecker)['compile']>>(
-    'exists',
+  validator.rule<ReturnType<(typeof minImageWidthRuleChecker)['compile']>>(
+    minImageWidthRuleChecker.ruleName,
     async (value: MultipartFileContract, compiledOptions, options) => {
       try {
-        await minImageWidthChecker.validate(value, compiledOptions, options)
+        await minImageWidthRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
+        throwCatchallError(error)
+
         logger.fatal(
           { err: error },
-          `"${ImageDimensionsValidationRule.minImageWidth}" validation rule failed`
+          `"${minImageWidthRuleChecker.ruleName}" validation rule failed`
         )
         options.errorReporter.report(
           options.pointer,
-          `${ImageDimensionsValidationRule.minImageWidth}`,
-          `${ImageDimensionsValidationRule.minImageWidth} validation failure`,
+          `${minImageWidthRuleChecker.ruleName}`,
+          `${minImageWidthRuleChecker.ruleName} validation failure`,
           options.arrayExpressionPointer
         )
       }
     },
     (options) => {
       return {
-        compiledOptions: minImageWidthChecker.compile(options[0]),
+        compiledOptions: minImageWidthRuleChecker.compile(options[0]),
         async: true,
       }
     }
   )
 
-  const minImageHeightChecker = new ImageDimensionsCheck(
-    ImageDimensionsValidationRule.minImageHeight
+  const minImageHeightRuleChecker = new ImageDimensionsCheck(
+    ImageDimensionsValidationRule.minImageHeight,
+    logger
   )
 
-  validator.rule<ReturnType<(typeof minImageHeightChecker)['compile']>>(
-    'exists',
+  validator.rule<ReturnType<(typeof minImageHeightRuleChecker)['compile']>>(
+    minImageHeightRuleChecker.ruleName,
     async (value: MultipartFileContract, compiledOptions, options) => {
       try {
-        await minImageHeightChecker.validate(value, compiledOptions, options)
+        await minImageHeightRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
+        throwCatchallError(error)
+
         logger.fatal(
           { err: error },
-          `"${ImageDimensionsValidationRule.minImageHeight}" validation rule failed`
+          `"${minImageHeightRuleChecker.ruleName}" validation rule failed`
         )
         options.errorReporter.report(
           options.pointer,
-          `${ImageDimensionsValidationRule.minImageHeight}`,
-          `${ImageDimensionsValidationRule.minImageHeight} validation failure`,
+          `${minImageHeightRuleChecker.ruleName}`,
+          `${minImageHeightRuleChecker.ruleName} validation failure`,
           options.arrayExpressionPointer
         )
       }
     },
     (options) => {
       return {
-        compiledOptions: minImageHeightChecker.compile(options[0]),
+        compiledOptions: minImageHeightRuleChecker.compile(options[0]),
+        async: true,
+      }
+    }
+  )
+
+  const maxImageWidthRuleChecker = new ImageDimensionsCheck(
+    ImageDimensionsValidationRule.maxImageWidth,
+    logger
+  )
+
+  validator.rule<ReturnType<(typeof maxImageWidthRuleChecker)['compile']>>(
+    maxImageWidthRuleChecker.ruleName,
+    async (value: MultipartFileContract, compiledOptions, options) => {
+      try {
+        await maxImageWidthRuleChecker.validate(value, compiledOptions, options)
+      } catch (error) {
+        throwCatchallError(error)
+
+        logger.fatal(
+          { err: error },
+          `"${maxImageWidthRuleChecker.ruleName}" validation rule failed`
+        )
+        options.errorReporter.report(
+          options.pointer,
+          `${maxImageWidthRuleChecker.ruleName}`,
+          `${maxImageWidthRuleChecker.ruleName} validation failure`,
+          options.arrayExpressionPointer
+        )
+      }
+    },
+    (options) => {
+      return {
+        compiledOptions: maxImageWidthRuleChecker.compile(options[0]),
+        async: true,
+      }
+    }
+  )
+
+  const maxImageHeightRuleChecker = new ImageDimensionsCheck(
+    ImageDimensionsValidationRule.maxImageHeight,
+    logger
+  )
+
+  validator.rule<ReturnType<(typeof maxImageHeightRuleChecker)['compile']>>(
+    maxImageHeightRuleChecker.ruleName,
+    async (value: MultipartFileContract, compiledOptions, options) => {
+      try {
+        await maxImageHeightRuleChecker.validate(value, compiledOptions, options)
+      } catch (error) {
+        throwCatchallError(error)
+
+        logger.fatal(
+          { err: error },
+          `"${maxImageHeightRuleChecker.ruleName}" validation rule failed`
+        )
+        options.errorReporter.report(
+          options.pointer,
+          `${maxImageHeightRuleChecker.ruleName}`,
+          `${maxImageHeightRuleChecker.ruleName} validation failure`,
+          options.arrayExpressionPointer
+        )
+      }
+    },
+    (options) => {
+      return {
+        compiledOptions: maxImageHeightRuleChecker.compile(options[0]),
+        async: true,
+      }
+    }
+  )
+
+  const aspectRatioRuleChecker = new ImageDimensionsCheck(
+    ImageDimensionsValidationRule.imageAspectRatio,
+    logger
+  )
+
+  validator.rule<ReturnType<(typeof aspectRatioRuleChecker)['compile']>>(
+    aspectRatioRuleChecker.ruleName,
+    async (value: MultipartFileContract, compiledOptions, options) => {
+      try {
+        await aspectRatioRuleChecker.validate(value, compiledOptions, options)
+      } catch (error) {
+        throwCatchallError(error)
+
+        logger.fatal({ err: error }, `"${aspectRatioRuleChecker.ruleName}" validation rule failed`)
+        options.errorReporter.report(
+          options.pointer,
+          `${aspectRatioRuleChecker.ruleName}`,
+          `${aspectRatioRuleChecker.ruleName} validation failure`,
+          options.arrayExpressionPointer
+        )
+      }
+    },
+    (options) => {
+      return {
+        compiledOptions: aspectRatioRuleChecker.compile(options[0]),
         async: true,
       }
     }
