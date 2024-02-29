@@ -10,3 +10,4 @@
 /// <reference path="./attachment.ts" />
 /// <reference path="./container.ts" />
 /// <reference path="./images.ts" />
+/// <reference path="./validator.ts" />

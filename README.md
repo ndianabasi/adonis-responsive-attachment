@@ -765,6 +765,33 @@ If you had directly called the `computeUrls` method within your application, you
     })
   }
 ```
+
+### Image Dimensions Validations
+
+The Adonis Responsive Attachment add-on (from v1.6.0) comes with a set of validation rules for validating image dimensions. The validations hook into the Adonisjs Validation module so you can expect the same performance as other Adonisjs validation rules.
+
+The following validation rules are available:
+
+1. `maxImageWidth` rule,
+1. `maxImageHeight` rule,
+1. `minImageWidth` rule,
+1. `minImageHeight` rule, and
+1. `imageAspectRatio` rule.
+
+#### Example usage
+
+Each rule expects a single `number` parameter to be provided.
+
+```typescript
+await ctx.request.validate({
+  schema: schema.create({ 
+    avatar: schema.file(undefined, [rules.maxImageHeight(520)]) 
+  }),
+})
+```
+
+You are free to apply all the available rules to a single request key if your validation logic requires such strictness.
+
  
 [github-actions-image]: https://img.shields.io/github/workflow/status/ndianabasi/adonis-responsive-attachment/test?style=for-the-badge
 [github-actions-url]: https://github.com/ndianabasi/adonis-responsive-attachment/actions/workflows/test.yml "github-actions"

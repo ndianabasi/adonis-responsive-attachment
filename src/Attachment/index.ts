@@ -284,7 +284,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       extname: this.extname,
       mimeType: this.mimeType,
       url: this.url,
-      breakpoints: this.breakpoints!,
+      breakpoints: this.breakpoints,
       buffer: this.buffer,
     }
   }
@@ -349,172 +349,182 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Save image to the disk. Results in noop when "this.isLocal = false"
    */
   public async save() {
-    /**
-     * Do not persist already persisted image or if the
-     * instance is not local
-     */
-    if (!this.isLocal || this.isPersisted) {
-      return
-    }
-
-    /**
-     * Optimise the original file and return the enhanced buffer and
-     * information of the enhanced buffer
-     */
-    const enhancedImageData = await this.enhanceFile()
-
-    /**
-     * Generate the name of the original image
-     */
-    this.name =
-      this.options?.keepOriginal ?? true
-        ? generateName({
-            extname: enhancedImageData.extname,
-            hash: enhancedImageData.hash,
-            options: this.options,
-            prefix: 'original',
-            fileName: this.fileName,
-          })
-        : undefined
-
-    /**
-     * Update the local attributes with the attributes
-     * of the optimised original file
-     */
-    if (this.options?.keepOriginal ?? true) {
-      this.size = enhancedImageData.size
-      this.hash = enhancedImageData.hash
-      this.width = enhancedImageData.width
-      this.height = enhancedImageData.height
-      this.format = enhancedImageData.format
-      this.extname = enhancedImageData.extname
-      this.mimeType = enhancedImageData.mimeType
-    }
-
-    /**
-     * Inject the name into the `ImageInfo`
-     */
-    enhancedImageData.name = this.name
-    enhancedImageData.fileName = this.fileName
-
-    /**
-     * Write the optimised original image to the disk
-     */
-    if (this.options?.keepOriginal ?? true) {
-      await this.getDisk().put(enhancedImageData.name!, enhancedImageData.buffer!)
-    }
-
-    /**
-     * Generate image thumbnail data
-     */
-    const thumbnailImageData = await generateThumbnail(enhancedImageData, this.options!)
-    if (thumbnailImageData) {
+    try {
       /**
-       * Write the thumbnail image to the disk
+       * Do not persist already persisted image or if the
+       * instance is not local
        */
-      await this.getDisk().put(thumbnailImageData.name!, thumbnailImageData.buffer!)
-      /**
-       * Delete buffer from `thumbnailImageData`
-       */
-      delete thumbnailImageData.buffer
-
-      set(enhancedImageData, 'breakpoints.thumbnail', thumbnailImageData)
-    }
-
-    /**
-     * Generate breakpoint image data
-     */
-    const breakpointFormats = await generateBreakpointImages(enhancedImageData, this.options!)
-    if (breakpointFormats && Array.isArray(breakpointFormats) && breakpointFormats.length > 0) {
-      for (const format of breakpointFormats) {
-        if (!format) continue
-
-        const { key, file: breakpointImageData } = format
-
-        /**
-         * Write the breakpoint image to the disk
-         */
-        await this.getDisk().put(breakpointImageData.name!, breakpointImageData.buffer!)
-
-        /**
-         * Delete buffer from `breakpointImageData`
-         */
-        delete breakpointImageData.buffer
-
-        set(enhancedImageData, ['breakpoints', key], breakpointImageData)
+      if (!this.isLocal || this.isPersisted) {
+        return
       }
+
+      /**
+       * Optimise the original file and return the enhanced buffer and
+       * information of the enhanced buffer
+       */
+      const enhancedImageData = await this.enhanceFile()
+
+      /**
+       * Generate the name of the original image
+       */
+      this.name =
+        this.options?.keepOriginal ?? true
+          ? generateName({
+              extname: enhancedImageData.extname,
+              hash: enhancedImageData.hash,
+              options: this.options,
+              prefix: 'original',
+              fileName: this.fileName,
+            })
+          : undefined
+
+      /**
+       * Update the local attributes with the attributes
+       * of the optimised original file
+       */
+      if (this.options?.keepOriginal ?? true) {
+        this.size = enhancedImageData.size
+        this.hash = enhancedImageData.hash
+        this.width = enhancedImageData.width
+        this.height = enhancedImageData.height
+        this.format = enhancedImageData.format
+        this.extname = enhancedImageData.extname
+        this.mimeType = enhancedImageData.mimeType
+      }
+
+      /**
+       * Inject the name into the `ImageInfo`
+       */
+      enhancedImageData.name = this.name
+      enhancedImageData.fileName = this.fileName
+
+      /**
+       * Write the optimised original image to the disk
+       */
+      if (this.options?.keepOriginal ?? true) {
+        await this.getDisk().put(enhancedImageData.name!, enhancedImageData.buffer!)
+      }
+
+      /**
+       * Generate image thumbnail data
+       */
+      const thumbnailImageData = await generateThumbnail(enhancedImageData, this.options!)
+      if (thumbnailImageData) {
+        /**
+         * Write the thumbnail image to the disk
+         */
+        await this.getDisk().put(thumbnailImageData.name!, thumbnailImageData.buffer!)
+        /**
+         * Delete buffer from `thumbnailImageData`
+         */
+        delete thumbnailImageData.buffer
+
+        set(enhancedImageData, 'breakpoints.thumbnail', thumbnailImageData)
+      }
+
+      /**
+       * Generate breakpoint image data
+       */
+      const breakpointFormats = await generateBreakpointImages(enhancedImageData, this.options!)
+      if (breakpointFormats && Array.isArray(breakpointFormats) && breakpointFormats.length > 0) {
+        for (const format of breakpointFormats) {
+          if (!format) continue
+
+          const { key, file: breakpointImageData } = format
+
+          /**
+           * Write the breakpoint image to the disk
+           */
+          await this.getDisk().put(breakpointImageData.name!, breakpointImageData.buffer!)
+
+          /**
+           * Delete buffer from `breakpointImageData`
+           */
+          delete breakpointImageData.buffer
+
+          set(enhancedImageData, ['breakpoints', key], breakpointImageData)
+        }
+      }
+
+      const { width, height } = await getDimensions(enhancedImageData.buffer!)
+
+      delete enhancedImageData.buffer
+
+      assign(enhancedImageData, {
+        width,
+        height,
+      })
+
+      /**
+       * Update the width and height
+       */
+      if (this.options?.keepOriginal ?? true) {
+        this.width = enhancedImageData.width
+        this.height = enhancedImageData.height
+      }
+
+      /**
+       * Update the local value of `breakpoints`
+       */
+      this.breakpoints = enhancedImageData.breakpoints!
+
+      /**
+       * Images has been persisted
+       */
+      this.isPersisted = true
+
+      /**
+       * Delete the temporary file
+       */
+      if (this.buffer) {
+        this.buffer = undefined
+      }
+
+      /**
+       * Compute the URL
+       */
+      await this.computeUrls().catch((error) => {
+        this.loggerInstance.error('Adonis Responsive Attachment error: %o', error)
+      })
+
+      return this
+    } catch (error) {
+      this.loggerInstance.fatal('Adonis Responsive Attachment error', error)
+      throw error
     }
-
-    const { width, height } = await getDimensions(enhancedImageData.buffer!)
-
-    delete enhancedImageData.buffer
-
-    assign(enhancedImageData, {
-      width,
-      height,
-    })
-
-    /**
-     * Update the width and height
-     */
-    if (this.options?.keepOriginal ?? true) {
-      this.width = enhancedImageData.width
-      this.height = enhancedImageData.height
-    }
-
-    /**
-     * Update the local value of `breakpoints`
-     */
-    this.breakpoints = enhancedImageData.breakpoints!
-
-    /**
-     * Images has been persisted
-     */
-    this.isPersisted = true
-
-    /**
-     * Delete the temporary file
-     */
-    if (this.buffer) {
-      this.buffer = undefined
-    }
-
-    /**
-     * Compute the URL
-     */
-    await this.computeUrls().catch((error) => {
-      this.loggerInstance.error('Adonis Responsive Attachment error: %o', error)
-    })
-
-    return this
   }
 
   /**
    * Delete original and responsive images from the disk
    */
   public async delete() {
-    if (!this.isPersisted) {
-      return
-    }
+    try {
+      if (!this.isPersisted) {
+        return
+      }
 
-    /**
-     * Delete the original image
-     */
-    if (this.options?.keepOriginal ?? true) await this.getDisk().delete(this.name!)
-    /**
-     * Delete the responsive images
-     */
-    if (this.breakpoints) {
-      for (const key in this.breakpoints) {
-        if (Object.prototype.hasOwnProperty.call(this.breakpoints, key)) {
-          const breakpointImage = this.breakpoints[key] as ImageAttributes
-          await this.getDisk().delete(breakpointImage.name!)
+      /**
+       * Delete the original image
+       */
+      if (this.options?.keepOriginal ?? true) await this.getDisk().delete(this.name!)
+      /**
+       * Delete the responsive images
+       */
+      if (this.breakpoints) {
+        for (const key in this.breakpoints) {
+          if (Object.prototype.hasOwnProperty.call(this.breakpoints, key)) {
+            const breakpointImage = this.breakpoints[key] as ImageAttributes
+            await this.getDisk().delete(breakpointImage.name!)
+          }
         }
       }
-    }
 
-    this.isDeleted = true
-    this.isPersisted = false
+      this.isDeleted = true
+      this.isPersisted = false
+    } catch (error) {
+      this.loggerInstance.fatal('Adonis Responsive Attachment error', error)
+      throw error
+    }
   }
 
   public async computeUrls(signedUrlOptions?: ContentHeaders & { expiresIn?: string | number }) {
