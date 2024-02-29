@@ -1,6 +1,6 @@
 {
   "name": "adonis-responsive-attachment",
-  "version": "1.5.10",
+  "version": "1.6.0",
   "description": "Generate and persist optimised and responsive breakpoint images on the fly in your AdonisJS application.",
   "main": "build/providers/ResponsiveAttachmentProvider.js",
   "files": [
@@ -41,8 +41,8 @@
   "author": "Ndianabasi Udonkang",
   "license": "MIT",
   "devDependencies": {
-    "@adonisjs/lucid": "^18.3.0",
     "@adonisjs/core": "^5.9.0",
+    "@adonisjs/lucid": "^18.3.0",
     "@adonisjs/mrm-preset": "^5.0.3",
     "@adonisjs/require-ts": "^2.0.13",
     "@poppinss/dev-utils": "^2.0.3",
