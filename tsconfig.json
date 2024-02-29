@@ -4,6 +4,7 @@
     "skipLibCheck": true,
     "types": ["@types/node", "@adonisjs/core", "@adonisjs/lucid"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
   }
 }

@@ -12,3 +12,11 @@ test-helpers/__app
 build
 dist
 shrinkwrap.yaml
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
