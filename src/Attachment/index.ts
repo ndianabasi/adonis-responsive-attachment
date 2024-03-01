@@ -24,6 +24,7 @@ import {
   generateThumbnail,
   getDefaultBlurhashOptions,
   getDimensions,
+  getMergedOptions,
   optimize,
 } from '../Helpers/image_manipulation_helper'
 import type {
@@ -359,6 +360,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Save image to the disk. Results in noop when "this.isLocal = false"
    */
   public async save() {
+    const OPTIONS = getMergedOptions(this.options || {})
+
     try {
       /**
        * Do not persist already persisted image or if the
@@ -377,11 +380,11 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Generate the name of the original image
        */
-      this.name = this.options?.keepOriginal
+      this.name = OPTIONS.keepOriginal
         ? generateName({
             extname: enhancedImageData.extname,
             hash: enhancedImageData.hash,
-            options: this.options,
+            options: OPTIONS,
             prefix: 'original',
             fileName: this.fileName,
           })
@@ -391,7 +394,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
        * Update the local attributes with the attributes
        * of the optimised original file
        */
-      if (this.options?.keepOriginal) {
+      if (OPTIONS.keepOriginal) {
         this.size = enhancedImageData.size
         this.hash = enhancedImageData.hash
         this.width = enhancedImageData.width
@@ -410,14 +413,14 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Write the optimised original image to the disk
        */
-      if (this.options?.keepOriginal) {
+      if (OPTIONS.keepOriginal) {
         await this.getDisk().put(enhancedImageData.name!, enhancedImageData.buffer!)
       }
 
       /**
        * Generate image thumbnail data
        */
-      const thumbnailImageData = await generateThumbnail(enhancedImageData, this.options!)
+      const thumbnailImageData = await generateThumbnail(enhancedImageData, OPTIONS)
 
       if (thumbnailImageData) {
         // Set blurhash to top-level image data
@@ -426,8 +429,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         enhancedImageData.blurhash = thumbnailImageData.blurhash
       }
 
-      const thumbnailIsRequired =
-        this.options?.responsiveDimensions && !this.options.disableThumbnail
+      const thumbnailIsRequired = OPTIONS.responsiveDimensions && !OPTIONS.disableThumbnail
 
       if (thumbnailImageData && thumbnailIsRequired) {
         /**
@@ -445,7 +447,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Generate breakpoint image data
        */
-      const breakpointFormats = await generateBreakpointImages(enhancedImageData, this.options!)
+      const breakpointFormats = await generateBreakpointImages(enhancedImageData, OPTIONS)
       if (breakpointFormats && Array.isArray(breakpointFormats) && breakpointFormats.length > 0) {
         for (const format of breakpointFormats) {
           if (!format) continue
@@ -478,7 +480,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Update the width and height
        */
-      if (this.options?.keepOriginal ?? true) {
+      if (OPTIONS.keepOriginal) {
         this.width = enhancedImageData.width
         this.height = enhancedImageData.height
       }
@@ -518,6 +520,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Delete original and responsive images from the disk
    */
   public async delete() {
+    const OPTIONS = getMergedOptions(this.options || {})
+
     try {
       if (!this.isPersisted) {
         return
@@ -526,7 +530,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Delete the original image
        */
-      if (this.options?.keepOriginal ?? true) await this.getDisk().delete(this.name!)
+      if (OPTIONS.keepOriginal) await this.getDisk().delete(this.name!)
       /**
        * Delete the responsive images
        */

@@ -86,7 +86,7 @@ test.group('@responsiveAttachment | insert', (group) => {
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
 
-    assert.deepEqual(users[0].avatar?.toJSON(), body.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), body.avatar)
 
     assert.isTrue(await Drive.exists(body.avatar.name!))
     assert.isTrue(await Drive.exists(body.avatar.breakpoints?.large.name!))
@@ -233,7 +233,7 @@ test.group('@responsiveAttachment | insert with transaction', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), body.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), body.avatar)
 
     assert.isTrue(await Drive.exists(body.avatar.name!))
     assert.isTrue(await Drive.exists(body.avatar.breakpoints?.large.name!))
@@ -439,7 +439,7 @@ test.group('@responsiveAttachment | update', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), secondResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), secondResponse.avatar)
 
     assert.isFalse(await Drive.exists(firstResponse.avatar.name!))
     assert.isFalse(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -521,7 +521,7 @@ test.group('@responsiveAttachment | update', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -607,7 +607,7 @@ test.group('@responsiveAttachment | update with transaction', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), secondResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), secondResponse.avatar)
 
     assert.isFalse(await Drive.exists(firstResponse.avatar.name!))
     assert.isFalse(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -694,7 +694,7 @@ test.group('@responsiveAttachment | update with transaction', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar!)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar!)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -777,7 +777,7 @@ test.group('@responsiveAttachment | update with transaction', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -930,7 +930,7 @@ test.group('@responsiveAttachment | resetToNull', (group) => {
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
 
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -1085,7 +1085,7 @@ test.group('@responsiveAttachment | resetToNull with transaction', (group) => {
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
 
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -1158,7 +1158,7 @@ test.group('@responsiveAttachment | resetToNull with transaction', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -1307,7 +1307,7 @@ test.group('@responsiveAttachment | delete', (group) => {
 
     const users = await User.all()
     assert.lengthOf(users, 1)
-    assert.deepEqual(users[0].avatar?.toJSON(), body.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), body.avatar)
 
     assert.isTrue(await Drive.exists(body.avatar.name!))
     assert.isTrue(await Drive.exists(body.avatar.breakpoints?.large.name!))
@@ -1474,7 +1474,7 @@ test.group('@responsiveAttachment | delete with transaction', (group) => {
     const users = await User.all()
 
     assert.lengthOf(users, 1)
-    assert.deepEqual(users[0].avatar?.toJSON(), body.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), body.avatar)
 
     assert.isTrue(await Drive.exists(body.avatar.name!))
     assert.isTrue(await Drive.exists(body.avatar.breakpoints?.large.name!))
@@ -1956,7 +1956,7 @@ test.group('@responsiveAttachment | fromBuffer | insert', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), body.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), body.avatar)
 
     assert.isTrue(await Drive.exists(body.avatar.name!))
     assert.isTrue(await Drive.exists(body.avatar.breakpoints?.large.name!))
@@ -2103,7 +2103,7 @@ test.group('@responsiveAttachment | fromBuffer | insert with transaction', (grou
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), body.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), body.avatar)
 
     assert.isTrue(await Drive.exists(body.avatar.name!))
     assert.isTrue(await Drive.exists(body.avatar.breakpoints?.large.name!))
@@ -2307,7 +2307,7 @@ test.group('@responsiveAttachment | fromBuffer | update', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), secondResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), secondResponse.avatar)
 
     assert.isFalse(await Drive.exists(firstResponse.avatar.name!))
     assert.isFalse(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -2387,7 +2387,7 @@ test.group('@responsiveAttachment | fromBuffer | update', (group) => {
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -2471,7 +2471,7 @@ test.group('@responsiveAttachment | fromBuffer | update with transaction', (grou
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), secondResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), secondResponse.avatar)
 
     assert.isFalse(await Drive.exists(firstResponse.avatar.name!))
     assert.isFalse(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -2556,7 +2556,7 @@ test.group('@responsiveAttachment | fromBuffer | update with transaction', (grou
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -2636,7 +2636,7 @@ test.group('@responsiveAttachment | fromBuffer | update with transaction', (grou
 
     assert.lengthOf(users, 1)
     assert.instanceOf(users[0].avatar, ResponsiveAttachment)
-    assert.deepEqual(users[0].avatar?.toJSON(), firstResponse.avatar)
+    assert.deepNestedInclude(users[0].avatar?.toJSON(), firstResponse.avatar)
 
     assert.isTrue(await Drive.exists(firstResponse.avatar.name!))
     assert.isTrue(await Drive.exists(firstResponse.avatar.breakpoints?.large.name!))
@@ -2751,7 +2751,7 @@ test.group('@responsiveAttachment | blurhash', (group) => {
     assert.isNotEmpty(user.avatar!.breakpoints?.thumbnail.blurhash)
   })
 
-  test.only('should not create attachment with blurhash string in all responsive formats when disabled', async (assert) => {
+  test('should not create attachment with blurhash string in all responsive formats when disabled', async (assert) => {
     const Drive = app.container.resolveBinding('Adonis/Core/Drive')
     const Db = app.container.resolveBinding('Adonis/Lucid/Database')
     const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')

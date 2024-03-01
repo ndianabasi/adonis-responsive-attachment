@@ -13,7 +13,7 @@ import { merge, pickBy, isEmpty } from 'lodash'
 import { DEFAULT_BREAKPOINTS } from '../Attachment/decorator'
 import { encode } from 'blurhash'
 
-const getMergedOptions = function (options: AttachmentOptions): AttachmentOptions {
+export const getMergedOptions = function (options: AttachmentOptions): AttachmentOptions {
   return merge(
     {
       preComputeUrls: false,
@@ -24,6 +24,7 @@ const getMergedOptions = function (options: AttachmentOptions): AttachmentOption
       responsiveDimensions: true,
       disableThumbnail: false,
       blurhash: getDefaultBlurhashOptions(options),
+      keepOriginal: true,
     },
     options
   )
