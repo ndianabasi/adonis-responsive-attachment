@@ -8,10 +8,10 @@
  */
 
 declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
-  import { ColumnOptions } from '@ioc:Adonis/Lucid/Orm'
-  import { LoggerContract } from '@ioc:Adonis/Core/Logger'
-  import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
-  import {
+  import type { ColumnOptions } from '@ioc:Adonis/Lucid/Orm'
+  import type { LoggerContract } from '@ioc:Adonis/Core/Logger'
+  import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
+  import type {
     DisksList,
     ContentHeaders,
     DriverContract,
@@ -42,6 +42,14 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     preComputeUrls?:
       | boolean
       | ((disk: DriverContract, attachment: ResponsiveAttachmentContract) => Promise<UrlRecords>)
+    blurhash?: BlurhashOptions
+  }
+
+  export type BlurhashOptions = {
+    enabled: boolean
+    createForExistingImages?: boolean
+    componentX?: number
+    componentY?: number
   }
 
   export interface ImageAttributes {
@@ -85,6 +93,11 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
      * The height of the image
      */
     height?: number
+
+    /**
+     * The blurhash of the image
+     */
+    blurhash?: string
 
     /**
      * The format of the image

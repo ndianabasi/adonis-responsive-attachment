@@ -22,9 +22,10 @@ import {
   generateBreakpointImages,
   generateName,
   generateThumbnail,
+  getDefaultBlurhashOptions,
   getDimensions,
   optimize,
-} from '../Helpers/ImageManipulationHelper'
+} from '../Helpers/image_manipulation_helper'
 import type {
   AttachmentOptions,
   ResponsiveAttachmentContract,
@@ -234,6 +235,11 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public height?: number
 
   /**
+   * The image's blurhash.
+   */
+  public blurhash?: string
+
+  /**
    * This file name.
    */
   public fileName?: string
@@ -327,6 +333,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         disableThumbnail: this.options?.disableThumbnail ?? false,
         folder: this.options?.folder,
         disk: this.options?.disk,
+        blurhash: getDefaultBlurhashOptions(this.options),
       },
       options
     )
@@ -367,22 +374,21 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Generate the name of the original image
        */
-      this.name =
-        this.options?.keepOriginal ?? true
-          ? generateName({
-              extname: enhancedImageData.extname,
-              hash: enhancedImageData.hash,
-              options: this.options,
-              prefix: 'original',
-              fileName: this.fileName,
-            })
-          : undefined
+      this.name = this.options?.keepOriginal
+        ? generateName({
+            extname: enhancedImageData.extname,
+            hash: enhancedImageData.hash,
+            options: this.options,
+            prefix: 'original',
+            fileName: this.fileName,
+          })
+        : undefined
 
       /**
        * Update the local attributes with the attributes
        * of the optimised original file
        */
-      if (this.options?.keepOriginal ?? true) {
+      if (this.options?.keepOriginal) {
         this.size = enhancedImageData.size
         this.hash = enhancedImageData.hash
         this.width = enhancedImageData.width
@@ -401,7 +407,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Write the optimised original image to the disk
        */
-      if (this.options?.keepOriginal ?? true) {
+      if (this.options?.keepOriginal) {
         await this.getDisk().put(enhancedImageData.name!, enhancedImageData.buffer!)
       }
 
@@ -409,7 +415,18 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
        * Generate image thumbnail data
        */
       const thumbnailImageData = await generateThumbnail(enhancedImageData, this.options!)
+
       if (thumbnailImageData) {
+        // Set blurhash to top-level image data
+        this.blurhash = thumbnailImageData.blurhash
+        // Set the blurhash to the enhanced image data
+        enhancedImageData.blurhash = thumbnailImageData.blurhash
+      }
+
+      const thumbnailIsRequired =
+        this.options?.responsiveDimensions && !this.options.disableThumbnail
+
+      if (thumbnailImageData && thumbnailIsRequired) {
         /**
          * Write the thumbnail image to the disk
          */

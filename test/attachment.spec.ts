@@ -18,7 +18,7 @@ import { ResponsiveAttachment } from '../src/Attachment/index'
 import { setup, cleanup, setupApplication, rollbackDB } from '../test-helpers'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { responsiveAttachment as Attachment } from '../src/Attachment/decorator'
-import { getDimensions } from '../src/Helpers/ImageManipulationHelper'
+import { getDimensions } from '../src/Helpers/image_manipulation_helper'
 import { BodyParserMiddleware } from '@adonisjs/bodyparser/build/src/BodyParser'
 import { ResponsiveAttachmentContract } from '@ioc:Adonis/Addons/ResponsiveAttachment'
 
