@@ -27,6 +27,7 @@ test.group('ResponsiveAttachment | Validator | Failures', (group) => {
     app = await setupApplication()
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
     extendValidator(validator, app.logger)
   })
 
@@ -213,6 +214,7 @@ test.group('ResponsiveAttachment | Validator | Successes', (group) => {
     app = await setupApplication()
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
     extendValidator(validator, app.logger)
   })
 

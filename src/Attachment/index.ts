@@ -221,6 +221,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
   /**
    * The image hash.
+   * @deprecated Will be removed in later versions
    */
   public hash?: string
 
@@ -270,6 +271,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     this.hash = attributes.hash
     this.width = attributes.width
     this.format = attributes.format
+    this.blurhash = attributes.blurhash
     this.height = attributes.height
     this.extname = attributes.extname
     this.mimeType = attributes.mimeType
@@ -292,6 +294,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       url: this.url,
       breakpoints: this.breakpoints,
       buffer: this.buffer,
+      blurhash: this.blurhash,
     }
   }
 

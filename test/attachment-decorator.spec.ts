@@ -21,6 +21,7 @@ import { ResponsiveAttachment } from '../src/Attachment'
 import { responsiveAttachment } from '../src/Attachment/decorator'
 import { setup, cleanup, setupApplication } from '../test-helpers'
 import { readFile } from 'fs/promises'
+import { isBlurhashValid } from 'blurhash'
 
 let app: ApplicationContract
 
@@ -33,6 +34,7 @@ test.group('@responsiveAttachment | insert', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -176,6 +178,7 @@ test.group('@responsiveAttachment | insert with transaction', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -382,6 +385,7 @@ test.group('@responsiveAttachment | update', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -546,6 +550,7 @@ test.group('@responsiveAttachment | update with transaction', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -813,6 +818,7 @@ test.group('@responsiveAttachment | resetToNull', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -959,6 +965,7 @@ test.group('@responsiveAttachment | resetToNull with transaction', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -1186,6 +1193,7 @@ test.group('@responsiveAttachment | delete', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -1321,6 +1329,7 @@ test.group('@responsiveAttachment | delete with transaction', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -1487,6 +1496,7 @@ test.group('@responsiveAttachment | find', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -1623,6 +1633,7 @@ test.group('@responsiveAttachment | fetch', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -1758,6 +1769,7 @@ test.group('@responsiveAttachment | paginate', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -1893,6 +1905,7 @@ test.group('@responsiveAttachment | fromBuffer | insert', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -2035,6 +2048,7 @@ test.group('@responsiveAttachment | fromBuffer | insert with transaction', (grou
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -2241,6 +2255,7 @@ test.group('@responsiveAttachment | fromBuffer | update', (group) => {
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -2401,6 +2416,7 @@ test.group('@responsiveAttachment | fromBuffer | update with transaction', (grou
 
     app.container.resolveBinding('Adonis/Core/Route').commit()
     ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
   })
 
   group.afterEach(async () => {
@@ -2651,5 +2667,141 @@ test.group('@responsiveAttachment | fromBuffer | update with transaction', (grou
       firstResponse.avatar.breakpoints?.medium.size! < firstResponse.avatar.breakpoints?.large.size
     )
     assert.isTrue(firstResponse.avatar.breakpoints?.large.size! < firstResponse.avatar.size!)
+  })
+})
+
+test.group('@responsiveAttachment | blurhash', (group) => {
+  group.before(async () => {
+    app = await setupApplication()
+    await setup(app)
+
+    app.container.resolveBinding('Adonis/Core/Route').commit()
+    ResponsiveAttachment.setDrive(app.container.resolveBinding('Adonis/Core/Drive'))
+    ResponsiveAttachment.setLogger(app.container.resolveBinding('Adonis/Core/Logger'))
+  })
+
+  group.afterEach(async () => {
+    await app.container.resolveBinding('Adonis/Lucid/Database').connection().truncate('users')
+  })
+
+  group.after(async () => {
+    await cleanup(app)
+  })
+
+  test('should create attachment with blurhash string in all responsive formats when enabled', async (assert) => {
+    const Drive = app.container.resolveBinding('Adonis/Core/Drive')
+    const Db = app.container.resolveBinding('Adonis/Lucid/Database')
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+    const HttpContext = app.container.resolveBinding('Adonis/Core/HttpContext')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @responsiveAttachment({ blurhash: { enabled: true } })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const server = createServer((req, res) => {
+      const ctx = HttpContext.create('/', {}, req, res)
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        const buffer = await readFile(
+          join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg')
+        )
+        const trx = await Db.transaction()
+
+        const user = await User.firstOrNew({ username: 'ndianabasi' }, {}, { client: trx })
+        user.avatar = await ResponsiveAttachment.fromBuffer(buffer)
+        await user.save()
+        await trx.commit()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const { body } = await supertest(server).post('/')
+
+    assert.isTrue(await Drive.exists(body.avatar.name))
+    assert.isNotEmpty(body.avatar.blurhash)
+    assert.isNotEmpty(body.avatar.breakpoints?.small.blurhash)
+    assert.isNotEmpty(body.avatar.breakpoints?.large.blurhash)
+    assert.isNotEmpty(body.avatar.breakpoints?.medium.blurhash)
+    assert.isNotEmpty(body.avatar.breakpoints?.thumbnail.blurhash)
+    // Check that blurhash is valid
+    assert.isTrue(isBlurhashValid(body.avatar.blurhash).result)
+    // All blurhashes should be the same
+    assert.isTrue(
+      body.avatar.blurhash === body.avatar.breakpoints?.small.blurhash &&
+        body.avatar.blurhash === body.avatar.breakpoints?.medium.blurhash &&
+        body.avatar.blurhash === body.avatar.breakpoints?.large.blurhash &&
+        body.avatar.blurhash === body.avatar.breakpoints?.thumbnail.blurhash
+    )
+
+    const user = await User.firstOrFail()
+
+    assert.isNotEmpty(user.avatar!.blurhash)
+    assert.isNotEmpty(user.avatar!.breakpoints?.small.blurhash)
+    assert.isNotEmpty(user.avatar!.breakpoints?.large.blurhash)
+    assert.isNotEmpty(user.avatar!.breakpoints?.medium.blurhash)
+    assert.isNotEmpty(user.avatar!.breakpoints?.thumbnail.blurhash)
+  })
+
+  test.only('should not create attachment with blurhash string in all responsive formats when disabled', async (assert) => {
+    const Drive = app.container.resolveBinding('Adonis/Core/Drive')
+    const Db = app.container.resolveBinding('Adonis/Lucid/Database')
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+    const HttpContext = app.container.resolveBinding('Adonis/Core/HttpContext')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @responsiveAttachment({ blurhash: { enabled: false } })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const server = createServer((req, res) => {
+      const ctx = HttpContext.create('/', {}, req, res)
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        const buffer = await readFile(
+          join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg')
+        )
+        const trx = await Db.transaction()
+
+        const user = await User.firstOrNew({ username: 'ndianabasi' }, {}, { client: trx })
+        user.avatar = await ResponsiveAttachment.fromBuffer(buffer)
+        await user.save()
+        await trx.commit()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const { body } = await supertest(server).post('/')
+
+    assert.isTrue(await Drive.exists(body.avatar.name))
+    assert.isUndefined(body.avatar.blurhash)
+    assert.isUndefined(body.avatar.breakpoints?.small.blurhash)
+    assert.isUndefined(body.avatar.breakpoints?.large.blurhash)
+    assert.isUndefined(body.avatar.breakpoints?.medium.blurhash)
+    assert.isUndefined(body.avatar.breakpoints?.thumbnail.blurhash)
+
+    const user = await User.firstOrFail()
+
+    assert.isUndefined(user.avatar!.blurhash)
+    assert.isUndefined(user.avatar!.breakpoints?.small.blurhash)
+    assert.isUndefined(user.avatar!.breakpoints?.large.blurhash)
+    assert.isUndefined(user.avatar!.breakpoints?.medium.blurhash)
+    assert.isUndefined(user.avatar!.breakpoints?.thumbnail.blurhash)
   })
 })

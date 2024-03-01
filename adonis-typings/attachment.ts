@@ -47,7 +47,6 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
 
   export type BlurhashOptions = {
     enabled: boolean
-    createForExistingImages?: boolean
     componentX?: number
     componentY?: number
   }
@@ -81,6 +80,7 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
 
     /**
      * The hash string of the image
+     * @deprecated Will be removed in later versions
      */
     hash?: string
 

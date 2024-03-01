@@ -23,7 +23,7 @@ const getMergedOptions = function (options: AttachmentOptions): AttachmentOption
       optimizeSize: true,
       responsiveDimensions: true,
       disableThumbnail: false,
-      blurhash: getDefaultBlurhashOptions(this.options),
+      blurhash: getDefaultBlurhashOptions(options),
     },
     options
   )
@@ -115,8 +115,6 @@ export const generateBreakpoint = async ({
     return {
       key: key as keyof ImageBreakpoints,
       file: {
-        // This provides attributes like `blurhash`
-        ...imageData,
         // Override attributes in `imageData`
         name: breakpointFileName,
         hash: imageData.hash,
@@ -127,6 +125,7 @@ export const generateBreakpoint = async ({
         height: height,
         size: bytesToKBytes(size!),
         buffer: breakpointBuffer,
+        blurhash: imageData.blurhash,
       },
     }
   } else {
@@ -256,7 +255,7 @@ export const generateThumbnail = async function (
 
       // Generate blurhash
       if (blurhashEnabled) {
-        blurhash = await encodeImageToBlurhash(thumbnailImageData, this.options)
+        blurhash = await encodeImageToBlurhash(options, thumbnailImageData.buffer)
         // Set the blurhash in the thumbnail data
         thumbnailImageData.blurhash = blurhash
       }
@@ -314,34 +313,41 @@ export function getDefaultBlurhashOptions(
 ): Required<BlurhashOptions> {
   return {
     enabled: options?.blurhash?.enabled ?? false,
-    createForExistingImages: options?.blurhash?.createForExistingImages ?? false,
     componentX: options?.blurhash?.componentX ?? 4,
     componentY: options?.blurhash?.componentY ?? 3,
   }
 }
 
 export function encodeImageToBlurhash(
-  image: ImageInfo,
-  options: AttachmentOptions
+  options: AttachmentOptions,
+  imageBuffer?: Buffer
 ): Promise<string> {
   const { blurhash } = options
   const { componentX, componentY } = blurhash || {}
-  const { width, height } = image || {}
 
   if (!componentX || !componentY) {
     throw new Error('Ensure "componentX" and "componentY" are set')
   }
-  if (!width || !height) {
-    throw new Error('Ensure image "width" and "height" are set')
-  }
-  if (!image.buffer) {
+  if (!imageBuffer) {
     throw new Error('Ensure "buffer" is provided')
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
+      // Convert buffer to pixels
+      const { data: pixels, info: metadata } = await sharp(imageBuffer)
+        .raw()
+        .ensureAlpha()
+        .toBuffer({ resolveWithObject: true })
+
       return resolve(
-        encode(new Uint8ClampedArray(image.buffer!), width, height, componentX, componentY)
+        encode(
+          new Uint8ClampedArray(pixels),
+          metadata.width,
+          metadata.height,
+          componentX,
+          componentY
+        )
       )
     } catch (error) {
       return reject(error)
