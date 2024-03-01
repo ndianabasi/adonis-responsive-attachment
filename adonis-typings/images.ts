@@ -18,6 +18,9 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
   export type ImageInfo = {
     name?: string
     fileName?: string
+    /**
+     * @deprecated Will be removed in later versions
+     */
     hash?: string
     extname?: string
     mimeType?: string
@@ -26,6 +29,7 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     buffer?: Buffer
     width?: number
     height?: number
+    blurhash?: string
     /**
      * The image format used by sharp to force conversion
      * to different file types/formats

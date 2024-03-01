@@ -43,6 +43,8 @@ On the frontend of your blog, you can use the `srcset` attribute of the `img` el
 - Allows you to disable some breakpoints.
 - Allows you to disable the generation of the thumbnail image without affecting the generation of other responsive images.
 - Ability to create attachments from file buffers. This is very helpful when you want to persist images outside of the HTTP life-cycle.
+- Provides validation rules for checking image dimensions and aspect ratio.
+- Provides blurhash generation (https://blurha.sh/)
 
 ## Pre-requisites
 
@@ -242,10 +244,11 @@ The `responsiveAttachment` decorator accepts the following options:
 4. `forceFormat` - "jpeg" | "png" | "webp" | "tiff" | "avif",
 5. `optimizeSize` - boolean,
 6. `optimizeOrientation` - boolean,
-7. `responsiveDimensions` - boolean,
+7. `responsiveDimensions` - boolean | Option,
 8. `preComputeUrls` - boolean,
 9. `disableThumbnail` - boolean.
 10. `keepOriginal` - boolean.
+11. `blurhash` - Option
 
 Let's discuss these options
 
@@ -505,6 +508,39 @@ post.coverImage.breakpoints.medium.name // exists
 post.coverImage.breakpoints.large.name // exists
 post.coverImage.breakpoints.thumbnail.name // exists
 ```
+
+### 11. The `blurhash` Option
+
+The `blurhash` option is used to enable, disable, and customise the generation of blurhashes (https://blurha.sh/) for the generated responsive formats. Blurhash generation is disabled by default.
+
+Below is the type for the blurhash option.
+
+```typescript
+type BlurhashOptions = {
+  enabled: boolean
+  componentX?: number
+  componentY?: number
+}
+```
+For more about `componentX` and `componentY` properties [read here](https://github.com/woltapp/blurhash?tab=readme-ov-file#how-do-i-pick-the-number-of-x-and-y-components).
+
+A responsive format with blurhash looks like this:
+
+```javascript
+{
+  name: 'small_avatar_clt8v5bva00267fi1542b3axb.jpg',
+  hash: 'clt8v5bva00267fi1542b3axb',
+  extname: 'jpg',
+  mimeType: 'image/jpeg',
+  format: 'jpeg',
+  width: 500,
+  height: 333,
+  size: 36.98,
+  blurhash: 'LnEM,?t7RPbIt:axadj[M|WAj[j['
+}
+```
+
+Note that when blurhash is disabled, the `blurhash` property will be `undefined` before serialisation and missing after serialisation.
 
 ## Generating URLs
 

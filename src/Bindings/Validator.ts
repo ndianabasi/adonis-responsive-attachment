@@ -12,7 +12,7 @@ import { readFile } from 'fs/promises'
 import { Exception } from '@poppinss/utils'
 import { LoggerContract } from '@ioc:Adonis/Core/Logger'
 import { ValidationRuntimeOptions, validator as validatorStatic } from '@ioc:Adonis/Core/Validator'
-import { getMetaData } from '../Helpers/ImageManipulationHelper'
+import { getMetaData } from '../Helpers/image_manipulation_helper'
 import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
 
 type NormalizedOptions = { validationValue: number }

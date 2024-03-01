@@ -18,6 +18,7 @@ import type {
   ResponsiveAttachmentContract,
   ResponsiveAttachmentDecorator,
 } from '@ioc:Adonis/Addons/ResponsiveAttachment'
+import { getDefaultBlurhashOptions } from '../Helpers/image_manipulation_helper'
 
 /**
  * Default breakpoint options
@@ -223,6 +224,8 @@ export const responsiveAttachment: ResponsiveAttachmentDecorator = (options) => 
     const Model = target.constructor as LucidModel
     Model.boot()
 
+    const enableBlurhash = getDefaultBlurhashOptions(options)
+
     /**
      * Separate attachment options from the column options
      */
@@ -262,6 +265,7 @@ export const responsiveAttachment: ResponsiveAttachmentDecorator = (options) => 
         optimizeSize,
         responsiveDimensions,
         disableThumbnail,
+        blurhash: enableBlurhash,
       },
     })
 

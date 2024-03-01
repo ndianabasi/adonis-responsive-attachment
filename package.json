@@ -93,6 +93,7 @@
   "homepage": "https://github.com/ndianabasi/adonis-responsive-attachment#readme",
   "dependencies": {
     "@poppinss/utils": "^5.0.0",
+    "blurhash": "^2.0.5",
     "detect-file-type": "^0.2.8",
     "lodash": "^4.17.21",
     "sharp": "^0.31.2"

@@ -6,12 +6,14 @@ import {
   OptimizedOutput,
   BreakpointFormat,
   FileDimensions,
+  BlurhashOptions,
 } from '@ioc:Adonis/Addons/ResponsiveAttachment'
 import { cuid } from '@poppinss/utils/build/helpers'
 import { merge, pickBy, isEmpty } from 'lodash'
 import { DEFAULT_BREAKPOINTS } from '../Attachment/decorator'
+import { encode } from 'blurhash'
 
-const getMergedOptions = function (options: AttachmentOptions): AttachmentOptions {
+export const getMergedOptions = function (options: AttachmentOptions): AttachmentOptions {
   return merge(
     {
       preComputeUrls: false,
@@ -21,6 +23,8 @@ const getMergedOptions = function (options: AttachmentOptions): AttachmentOption
       optimizeSize: true,
       responsiveDimensions: true,
       disableThumbnail: false,
+      blurhash: getDefaultBlurhashOptions(options),
+      keepOriginal: true,
     },
     options
   )
@@ -112,6 +116,7 @@ export const generateBreakpoint = async ({
     return {
       key: key as keyof ImageBreakpoints,
       file: {
+        // Override attributes in `imageData`
         name: breakpointFileName,
         hash: imageData.hash,
         extname,
@@ -121,6 +126,7 @@ export const generateBreakpoint = async ({
         height: height,
         size: bytesToKBytes(size!),
         buffer: breakpointBuffer,
+        blurhash: imageData.blurhash,
       },
     }
   } else {
@@ -200,12 +206,14 @@ export const generateThumbnail = async function (
   options: AttachmentOptions
 ): Promise<ImageInfo | null> {
   options = getMergedOptions(options)
+  const blurhashEnabled = !!options.blurhash?.enabled
+  let blurhash: string | undefined
 
   if (!(await canBeProcessed(imageData.buffer!))) {
     return null
   }
 
-  if (!options?.responsiveDimensions || options?.disableThumbnail) {
+  if (!blurhashEnabled && (!options?.responsiveDimensions || options?.disableThumbnail)) {
     return null
   }
 
@@ -234,7 +242,7 @@ export const generateThumbnail = async function (
         fileName: imageData.fileName,
       })
 
-      return {
+      const thumbnailImageData: ImageInfo = {
         name: thumbnailFileName,
         hash: imageData.hash,
         extname,
@@ -245,6 +253,15 @@ export const generateThumbnail = async function (
         size: bytesToKBytes(size!),
         buffer: thumbnailBuffer,
       }
+
+      // Generate blurhash
+      if (blurhashEnabled) {
+        blurhash = await encodeImageToBlurhash(options, thumbnailImageData.buffer)
+        // Set the blurhash in the thumbnail data
+        thumbnailImageData.blurhash = blurhash
+      }
+
+      return thumbnailImageData
     }
   }
 
@@ -290,4 +307,51 @@ export const generateBreakpointImages = async function (
       }
     })
   )
+}
+
+export function getDefaultBlurhashOptions(
+  options: AttachmentOptions | undefined
+): Required<BlurhashOptions> {
+  return {
+    enabled: options?.blurhash?.enabled ?? false,
+    componentX: options?.blurhash?.componentX ?? 4,
+    componentY: options?.blurhash?.componentY ?? 3,
+  }
+}
+
+export function encodeImageToBlurhash(
+  options: AttachmentOptions,
+  imageBuffer?: Buffer
+): Promise<string> {
+  const { blurhash } = options
+  const { componentX, componentY } = blurhash || {}
+
+  if (!componentX || !componentY) {
+    throw new Error('Ensure "componentX" and "componentY" are set')
+  }
+  if (!imageBuffer) {
+    throw new Error('Ensure "buffer" is provided')
+  }
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Convert buffer to pixels
+      const { data: pixels, info: metadata } = await sharp(imageBuffer)
+        .raw()
+        .ensureAlpha()
+        .toBuffer({ resolveWithObject: true })
+
+      return resolve(
+        encode(
+          new Uint8ClampedArray(pixels),
+          metadata.width,
+          metadata.height,
+          componentX,
+          componentY
+        )
+      )
+    } catch (error) {
+      return reject(error)
+    }
+  })
 }
