@@ -1,28 +1,35 @@
 {
   "name": "adonis-responsive-attachment",
-  "version": "1.7.0",
+  "version": "2.0.0.rc-1",
   "description": "Generate and persist optimised and responsive breakpoint images on the fly in your AdonisJS application.",
-  "main": "build/providers/ResponsiveAttachmentProvider.js",
+  "main": "./build/index.js",
   "files": [
-    "build/adonis-typings",
-    "build/providers",
-    "build/src"
+    "build",
+    "!build/bin",
+    "!build/tests"
   ],
-  "typings": "./build/adonis-typings/index.d.ts",
+  "type": "module",
+    "exports": {
+    ".": "./build/index.js",
+    "./types/*": "./build/src/types/*.js",
+    "./decorator": "./build/src/attachment/decorator.js",
+    "./responsive-attachment": "./build/src/attachment/index.js",
+    "./provider": "./build/providers/responsive_attachment_provider.js",
+    "./bindings": "./build/src/bindings/validator.js"
+  },
   "scripts": {
-    "mrm": "mrm --preset=@adonisjs/mrm-preset",
     "pretest": "npm run lint",
-    "test": "nyc node japaFile.js",
-    "clean": "del build",
-    "compile": "npm run lint && npm run clean && tsc",
-    "build": "npm run compile",
+    "typecheck": "tsc --noEmit",
+    "test": "c8 npm run test",
+    "clean": "del-cli build",
+    "prebuild": "npm run lint && npm run clean",
+    "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
+    "build": "tsup-node && tsc --emitDeclarationOnly --declaration",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
-    "commit": "git-cz",
     "release": "np --branch=develop --yolo",
-    "version": "npm run build",
-    "sync-labels": "github-label-sync --labels ./node_modules/@adonisjs/mrm-preset/gh-labels.json ndianabasi/adonis-responsive-attachment"
+    "version": "npm run build"
   },
   "keywords": [
     "adonisjs",
@@ -41,47 +48,60 @@
   "author": "Ndianabasi Udonkang",
   "license": "MIT",
   "devDependencies": {
-    "@adonisjs/core": "^5.9.0",
-    "@adonisjs/lucid": "^18.3.0",
-    "@adonisjs/mrm-preset": "^5.0.3",
     "@adonisjs/require-ts": "^2.0.13",
     "@poppinss/dev-utils": "^2.0.3",
     "@types/lodash": "^4.14.191",
-    "@types/node": "^18.11.10",
     "@types/sharp": "^0.31.0",
     "@types/supertest": "^2.0.12",
     "commitizen": "^4.2.5",
     "cz-conventional-changelog": "^3.3.0",
-    "del-cli": "^5.0.0",
-    "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-adonis": "^2.1.1",
     "eslint-plugin-prettier": "^4.2.1",
     "github-label-sync": "^2.2.0",
-    "husky": "^8.0.2",
     "japa": "^4.0.0",
     "mrm": "^4.1.13",
-    "mysql": "^2.18.1",
-    "np": "^7.6.2",
     "nyc": "^15.1.0",
-    "prettier": "^2.8.0",
-    "reflect-metadata": "^0.1.13",
-    "sqlite3": "^5.1.2",
     "supertest": "^6.3.1",
-    "typescript": "^4.9.3"
+    "@adonisjs/assembler": "^7.2.3",
+    "@adonisjs/core": "^6.3.1",
+    "@adonisjs/eslint-config": "^1.3.0",
+    "@adonisjs/lucid": "^20.4.0",
+    "@adonisjs/mrm-preset": "^5.0.3",
+    "@adonisjs/prettier-config": "^1.3.0",
+    "@adonisjs/tsconfig": "^1.3.0",
+    "@japa/assert": "^2.1.0",
+    "@japa/file-system": "^2.2.0",
+    "@japa/runner": "^3.1.1",
+    "@swc/core": "^1.4.8",
+    "@types/node": "^20.11.27",
+    "c8": "^9.1.0",
+    "copyfiles": "^2.4.1",
+    "del-cli": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "luxon": "^3.4.4",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.9.2",
+    "np": "^10.0.1",
+    "pg": "^8.11.3",
+    "prettier": "^3.2.5",
+    "reflect-metadata": "^0.2.1",
+    "sqlite3": "^5.1.7",
+    "tedious": "^18.1.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "typescript": "~5.4.2"
   },
   "peerDependencies": {
-    "@adonisjs/core": "^5.9.0",
-    "@adonisjs/lucid": "^18.3.0"
+     "@adonisjs/core": "^6.3.1",
+    "@adonisjs/lucid": "^20.4.0"
   },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
-  },
-  "np": {
-    "contents": ".",
-    "anyBranch": false
   },
   "repository": {
     "type": "git",
@@ -108,5 +128,41 @@
     "access": "public",
     "tag": "latest"
   },
-  "packageManager": "yarn@1.22.21"
+  "engines": {
+    "node": ">=20.6.0"
+  },
+    "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "exclude": [
+      "tests/**",
+      "bin/**"
+    ]
+  },
+  "np": {
+    "yarn": false,
+    "contents": ".",
+    "anyBranch": false,
+    "branch": "develop",
+    "releaseDraft": true,
+    "message": "chore: bump version to %s 🚀"
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types/*.ts",
+      "./src/bindings/validator.ts",
+      "./src/attachment/decorator.ts",
+      "./src/attachment/index.ts",
+      "./providers/responsive_attachment_provider.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": false,
+    "sourcemap": true,
+    "target": "esnext"
+  }
 }
