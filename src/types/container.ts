@@ -14,3 +14,9 @@ declare module '@ioc:Adonis/Core/Application' {
     'Adonis/Addons/ResponsiveAttachment': typeof ResponsiveAttachment
   }
 }
+
+declare module '@adonisjs/core/types' {
+  export interface ContainerBindings {
+    'adonis-responsive-attachment.decorator': Decorator
+  }
+}

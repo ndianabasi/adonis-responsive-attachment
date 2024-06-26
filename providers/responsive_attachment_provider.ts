@@ -7,10 +7,10 @@
  * file that was distributed with this source code.
  */
 
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import type { ApplicationService } from '@adonisjs/core/types'
 
 export default class ResponsiveAttachmentProvider {
-  constructor(protected application: ApplicationContract) {}
+  constructor(protected application: ApplicationService) {}
 
   /**
    * Extends the validator by defining validation rules
@@ -19,7 +19,7 @@ export default class ResponsiveAttachmentProvider {
     /**
      * Do not register validation rules in the "repl" environment
      */
-    if (this.application.environment === 'repl') {
+    if (this.application.nodeEnvironment === 'repl') {
       return
     }
 
@@ -33,7 +33,7 @@ export default class ResponsiveAttachmentProvider {
   }
 
   public register() {
-    this.application.container.bind('Adonis/Addons/ResponsiveAttachment', () => {
+    this.application.container.singleton('adonis-responsive-attachment', () => {
       const { ResponsiveAttachment } = require('../src/Attachment')
       const { responsiveAttachment } = require('../src/Attachment/decorator')
 

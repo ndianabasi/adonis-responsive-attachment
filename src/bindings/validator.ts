@@ -10,10 +10,10 @@
 
 import { readFile } from 'fs/promises'
 import { Exception } from '@poppinss/utils'
-import { LoggerContract } from '@ioc:Adonis/Core/Logger'
+import type { Logger } from '@adonisjs/logger'
 import { ValidationRuntimeOptions, validator as validatorStatic } from '@ioc:Adonis/Core/Validator'
 import { getMetaData } from '../services/image_manipulation_service'
-import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
+import type { MultipartFile } from '@adonisjs/bodyparser'
 
 type NormalizedOptions = { validationValue: number }
 
@@ -29,7 +29,10 @@ enum ImageDimensionsValidationRule {
  * Ensure image is complaint with expected dimensions validations
  */
 class ImageDimensionsCheck {
-  constructor(public ruleName: ImageDimensionsValidationRule, protected logger: LoggerContract) {}
+  constructor(
+    public ruleName: ImageDimensionsValidationRule,
+    protected logger: Logger
+  ) {}
 
   /**
    * Compile validation options
@@ -51,7 +54,7 @@ class ImageDimensionsCheck {
    * Validate the file
    */
   public async validate(
-    file: MultipartFileContract,
+    file: MultipartFile,
     { validationValue }: NormalizedOptions,
     { pointer, errorReporter, arrayExpressionPointer }: ValidationRuntimeOptions
   ) {
@@ -122,7 +125,7 @@ function throwCatchallError(error: Error) {
 /**
  * Extends the validator by adding `unique` and `exists`
  */
-export function extendValidator(validator: typeof validatorStatic, logger: LoggerContract) {
+export function extendValidator(validator: typeof validatorStatic, logger: Logger) {
   const minImageWidthRuleChecker = new ImageDimensionsCheck(
     ImageDimensionsValidationRule.minImageWidth,
     logger
@@ -130,7 +133,7 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
 
   validator.rule<ReturnType<(typeof minImageWidthRuleChecker)['compile']>>(
     minImageWidthRuleChecker.ruleName,
-    async (value: MultipartFileContract, compiledOptions, options) => {
+    async (value: MultipartFile, compiledOptions, options) => {
       try {
         await minImageWidthRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
@@ -163,7 +166,7 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
 
   validator.rule<ReturnType<(typeof minImageHeightRuleChecker)['compile']>>(
     minImageHeightRuleChecker.ruleName,
-    async (value: MultipartFileContract, compiledOptions, options) => {
+    async (value: MultipartFile, compiledOptions, options) => {
       try {
         await minImageHeightRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
@@ -196,7 +199,7 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
 
   validator.rule<ReturnType<(typeof maxImageWidthRuleChecker)['compile']>>(
     maxImageWidthRuleChecker.ruleName,
-    async (value: MultipartFileContract, compiledOptions, options) => {
+    async (value: MultipartFile, compiledOptions, options) => {
       try {
         await maxImageWidthRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
@@ -229,7 +232,7 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
 
   validator.rule<ReturnType<(typeof maxImageHeightRuleChecker)['compile']>>(
     maxImageHeightRuleChecker.ruleName,
-    async (value: MultipartFileContract, compiledOptions, options) => {
+    async (value: MultipartFile, compiledOptions, options) => {
       try {
         await maxImageHeightRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
@@ -262,7 +265,7 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
 
   validator.rule<ReturnType<(typeof aspectRatioRuleChecker)['compile']>>(
     aspectRatioRuleChecker.ruleName,
-    async (value: MultipartFileContract, compiledOptions, options) => {
+    async (value: MultipartFile, compiledOptions, options) => {
       try {
         await aspectRatioRuleChecker.validate(value, compiledOptions, options)
       } catch (error) {
