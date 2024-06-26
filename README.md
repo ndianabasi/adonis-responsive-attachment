@@ -816,13 +816,20 @@ The following validation rules are available:
 
 #### Example usage
 
-Each rule expects a single `number` parameter to be provided.
+Each rule expects a single `number` parameter to be provided. Each parameter is injected into the custom validation message via their respect rule names. See the custom message bag in the validation schema below.
 
 ```typescript
 await ctx.request.validate({
   schema: schema.create({ 
-    avatar: schema.file(undefined, [rules.maxImageHeight(520)]) 
+    avatar: schema.file(undefined, [
+      rules.maxImageWidth(1000),
+      rules.maxImageHeight(520),
+    ]) 
   }),
+  messages: {
+    'avatar.maxImageHeight': 'Maximum image height is {{ options.maxImageHeight }}',
+    'avatar.maxImageWidth': 'Maximum image width is {{ options.maxImageWidth }}',
+  }
 })
 ```
 

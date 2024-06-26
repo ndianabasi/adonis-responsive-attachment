@@ -43,141 +43,194 @@ test.group('ResponsiveAttachment | Validator | Failures', (group) => {
     await cleanup(app)
   })
 
+  const dataset = ['default_message', 'custom_message'] as const
+
   test('should return validation error if image is below the minimum image width', async (assert) => {
-    const server = createServer((req, res) => {
-      assert.plan(1)
+    for (const condition of dataset) {
+      const useDefaultMessage = condition === 'default_message'
 
-      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const server = createServer((req, res) => {
+        assert.plan(2)
 
-      const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+        const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
 
-      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
-        try {
-          await ctx.request.validate({
-            schema: schema.create({ avatar: schema.file(undefined, [rules.minImageWidth(520)]) }),
-          })
-        } catch (error) {
-          assert.deepEqual(error.messages, {
-            avatar: ['minImageWidth validation failure'],
-          })
-        }
-        ctx.response.finish()
+        const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+
+        app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+          try {
+            await ctx.request.validate({
+              schema: schema.create({ avatar: schema.file(undefined, [rules.minImageWidth(520)]) }),
+              messages: useDefaultMessage
+                ? undefined
+                : {
+                  'avatar.minImageWidth': 'Minimum image width is {{ options.minImageWidth }}px',
+                },
+            })
+          } catch (error) {
+            assert.deepEqual(error.messages, {
+              avatar: [useDefaultMessage ? 'minImageWidth validation failure' : 'Minimum image width is 520px'],
+            })
+          }
+          ctx.response.finish()
+        })
       })
-    })
 
-    await supertest(server)
-      .post('/')
-      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-150x100.jpg'))
+      await supertest(server)
+        .post('/')
+        .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-150x100.jpg'))
+    }
+
   })
 
   test('should return validation error if image is below the minimum image height', async (assert) => {
-    const server = createServer((req, res) => {
-      assert.plan(1)
+    for (const condition of dataset) {
+      const useDefaultMessage = condition === 'default_message'
 
-      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const server = createServer((req, res) => {
+        assert.plan(2)
 
-      const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+        const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
 
-      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
-        try {
-          await ctx.request.validate({
-            schema: schema.create({ avatar: schema.file(undefined, [rules.minImageHeight(720)]) }),
-          })
-        } catch (error) {
-          assert.deepEqual(error.messages, {
-            avatar: ['minImageHeight validation failure'],
-          })
-        }
-        ctx.response.finish()
+        const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+
+        app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+          try {
+            await ctx.request.validate({
+              schema: schema.create({ avatar: schema.file(undefined, [rules.minImageHeight(720)]) }),
+              messages: useDefaultMessage
+                ? undefined
+                : {
+                  'avatar.minImageHeight': 'Minimum image height is {{ options.minImageHeight }}px',
+                },
+            })
+          } catch (error) {
+            assert.deepEqual(error.messages, {
+              avatar: [useDefaultMessage ? 'minImageHeight validation failure' : 'Minimum image height is 720px'],
+            })
+          }
+          ctx.response.finish()
+        })
       })
-    })
 
-    await supertest(server)
-      .post('/')
-      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-150x100.jpg'))
+      await supertest(server)
+        .post('/')
+        .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-150x100.jpg'))
+    }
+
   })
 
   test('should return validation error if image is above the maximum image width', async (assert) => {
-    const server = createServer((req, res) => {
-      assert.plan(1)
+    for (const condition of dataset) {
+      const useDefaultMessage = condition === 'default_message'
 
-      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const server = createServer((req, res) => {
+        assert.plan(2)
 
-      const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+        const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
 
-      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
-        try {
-          await ctx.request.validate({
-            schema: schema.create({ avatar: schema.file(undefined, [rules.maxImageWidth(720)]) }),
-          })
-        } catch (error) {
-          assert.deepEqual(error.messages, {
-            avatar: ['maxImageWidth validation failure'],
-          })
-        }
-        ctx.response.finish()
+        const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+
+        app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+          try {
+            await ctx.request.validate({
+              schema: schema.create({ avatar: schema.file(undefined, [rules.maxImageWidth(720)]) }),
+              messages: useDefaultMessage
+                ? undefined
+                : {
+                  'avatar.maxImageWidth': 'Maximum image width is {{ options.maxImageWidth }}px',
+                },
+            })
+          } catch (error) {
+            assert.deepEqual(error.messages, {
+              avatar: [useDefaultMessage ? 'maxImageWidth validation failure' : 'Maximum image width is 720px'],
+            })
+          }
+          ctx.response.finish()
+        })
       })
-    })
 
-    await supertest(server)
-      .post('/')
-      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+      await supertest(server)
+        .post('/')
+        .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+
+    }
+
   })
 
   test('should return validation error if image is above the maximum image height', async (assert) => {
-    const server = createServer((req, res) => {
-      assert.plan(1)
+    for (const condition of dataset) {
+      const useDefaultMessage = condition === 'default_message'
 
-      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const server = createServer((req, res) => {
+        assert.plan(2)
 
-      const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+        const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
 
-      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
-        try {
-          await ctx.request.validate({
-            schema: schema.create({ avatar: schema.file(undefined, [rules.maxImageHeight(720)]) }),
-          })
-        } catch (error) {
-          assert.deepEqual(error.messages, {
-            avatar: ['maxImageHeight validation failure'],
-          })
-        }
-        ctx.response.finish()
+        const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+
+        app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+          try {
+            await ctx.request.validate({
+              schema: schema.create({ avatar: schema.file(undefined, [rules.maxImageHeight(720)]) }),
+              messages: useDefaultMessage
+                ? undefined
+                : {
+                  'avatar.maxImageHeight': 'Maximum image height is {{ options.maxImageHeight }}px',
+                },
+            })
+          } catch (error) {
+            assert.deepEqual(error.messages, {
+              avatar: [useDefaultMessage ? 'maxImageHeight validation failure' : 'Maximum image height is 720px'],
+            })
+          }
+          ctx.response.finish()
+        })
       })
-    })
 
-    await supertest(server)
-      .post('/')
-      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+      await supertest(server)
+        .post('/')
+        .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+    }
+
   })
 
   test('should return validation error if image does not match the aspect ratio', async (assert) => {
-    const server = createServer((req, res) => {
-      assert.plan(1)
+    for (const condition of dataset) {
+      const useDefaultMessage = condition === 'default_message'
 
-      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const server = createServer((req, res) => {
+        assert.plan(2)
 
-      const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+        const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
 
-      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
-        try {
-          await ctx.request.validate({
-            schema: schema.create({
-              avatar: schema.file(undefined, [rules.imageAspectRatio(2.45)]),
-            }),
-          })
-        } catch (error) {
-          assert.deepEqual(error.messages, {
-            avatar: ['imageAspectRatio validation failure'],
-          })
-        }
-        ctx.response.finish()
+        const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
+
+        app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+          try {
+            await ctx.request.validate({
+              schema: schema.create({
+                avatar: schema.file(undefined, [rules.imageAspectRatio(2.45)]),
+              }),
+              messages: useDefaultMessage
+                ? undefined
+                : {
+                  'avatar.imageAspectRatio': 'Required image aspect-ratio is {{ options.imageAspectRatio }}',
+                },
+            })
+          } catch (error) {
+            assert.deepEqual(error.messages, {
+              avatar: [useDefaultMessage ? 'imageAspectRatio validation failure' : 'Required image aspect-ratio is 2.45'],
+            })
+          }
+          ctx.response.finish()
+        })
       })
-    })
 
-    await supertest(server)
-      .post('/')
-      .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+      await supertest(server)
+        .post('/')
+        .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
+    }
+
   })
 
   test('should return validation error if validation value is not provided', async (assert) => {
@@ -232,7 +285,9 @@ test.group('ResponsiveAttachment | Validator | Successes', (group) => {
 
   test('should not throw validation error if image is above the minimum width', async (assert) => {
     const server = createServer((req, res) => {
-      const ctx = app.container.resolveBinding('Adonis/Core/HttpContext').create('/', {}, req, res)
+      const ctx = app.container
+        .resolveBinding('Adonis/Core/HttpContext')
+        .create('/', {}, req, res)
 
       const { rules, schema } = app.container.resolveBinding('Adonis/Core/Validator')
 
