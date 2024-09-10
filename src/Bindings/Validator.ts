@@ -29,7 +29,7 @@ enum ImageDimensionsValidationRule {
  * Ensure image is complaint with expected dimensions validations
  */
 class ImageDimensionsCheck {
-  constructor (public ruleName: ImageDimensionsValidationRule, protected logger: LoggerContract) { }
+  constructor(public ruleName: ImageDimensionsValidationRule, protected logger: LoggerContract) {}
 
   /**
    * Compile validation options
@@ -70,7 +70,8 @@ class ImageDimensionsCheck {
         pointer,
         this.ruleName,
         `${this.ruleName} validation failure`,
-        arrayExpressionPointer, { [this.ruleName]: validationValue }
+        arrayExpressionPointer,
+        { [this.ruleName]: validationValue }
       )
     }
 
@@ -145,7 +146,8 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
           options.pointer,
           `${minImageWidthRuleChecker.ruleName}`,
           `${minImageWidthRuleChecker.ruleName} validation failure`,
-          options.arrayExpressionPointer, { [minImageWidthRuleChecker.ruleName]: compiledOptions.validationValue }
+          options.arrayExpressionPointer,
+          { [minImageWidthRuleChecker.ruleName]: compiledOptions.validationValue }
         )
       }
     },
@@ -178,7 +180,8 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
           options.pointer,
           `${minImageHeightRuleChecker.ruleName}`,
           `${minImageHeightRuleChecker.ruleName} validation failure`,
-          options.arrayExpressionPointer, { [minImageHeightRuleChecker.ruleName]: compiledOptions.validationValue }
+          options.arrayExpressionPointer,
+          { [minImageHeightRuleChecker.ruleName]: compiledOptions.validationValue }
         )
       }
     },
@@ -211,7 +214,8 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
           options.pointer,
           `${maxImageWidthRuleChecker.ruleName}`,
           `${maxImageWidthRuleChecker.ruleName} validation failure`,
-          options.arrayExpressionPointer, { [maxImageWidthRuleChecker.ruleName]: compiledOptions.validationValue }
+          options.arrayExpressionPointer,
+          { [maxImageWidthRuleChecker.ruleName]: compiledOptions.validationValue }
         )
       }
     },
@@ -244,7 +248,8 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
           options.pointer,
           `${maxImageHeightRuleChecker.ruleName}`,
           `${maxImageHeightRuleChecker.ruleName} validation failure`,
-          options.arrayExpressionPointer, { [maxImageHeightRuleChecker.ruleName]: compiledOptions.validationValue }
+          options.arrayExpressionPointer,
+          { [maxImageHeightRuleChecker.ruleName]: compiledOptions.validationValue }
         )
       }
     },
@@ -274,7 +279,8 @@ export function extendValidator(validator: typeof validatorStatic, logger: Logge
           options.pointer,
           `${aspectRatioRuleChecker.ruleName}`,
           `${aspectRatioRuleChecker.ruleName} validation failure`,
-          options.arrayExpressionPointer, { [aspectRatioRuleChecker.ruleName]: compiledOptions.validationValue }
+          options.arrayExpressionPointer,
+          { [aspectRatioRuleChecker.ruleName]: compiledOptions.validationValue }
         )
       }
     },
