@@ -368,7 +368,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
        * instance is not local
        */
       if (!this.isLocal || this.isPersisted) {
-        return
+        return this
       }
 
       /**
