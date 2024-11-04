@@ -11,7 +11,6 @@
 
 import detect from 'detect-file-type'
 import { readFile } from 'fs/promises'
-import { DEFAULT_BREAKPOINTS } from './decorator'
 import { merge, isEmpty, assign, set } from 'lodash'
 import { LoggerContract } from '@ioc:Adonis/Core/Logger'
 import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
@@ -21,7 +20,6 @@ import {
   generateBreakpointImages,
   generateName,
   generateThumbnail,
-  getDefaultBlurhashOptions,
   getDimensions,
   getMergedOptions,
   optimize,
@@ -186,7 +184,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   /**
    * Attachment options
    */
-  public options?: AttachmentOptions
+  #options?: AttachmentOptions
 
   /**
    * The generated name of the original file.
@@ -306,9 +304,13 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Returns disk instance
    */
   private getDisk() {
-    const disk = this.options?.disk
+    const disk = this.#options?.disk
     const drive = (this.constructor as AttachmentConstructorContract).getDrive()
     return disk ? drive.use(disk) : drive.use()
+  }
+
+  public get getOptions() {
+    return this.#options || {}
   }
 
   /**
@@ -322,31 +324,19 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Define persistance options
    */
   public setOptions(options?: AttachmentOptions) {
-    this.options = merge(
-      {
-        preComputeUrls: this.options?.preComputeUrls ?? true,
-        keepOriginal: this.options?.keepOriginal ?? true,
-        breakpoints: this.options?.breakpoints ?? DEFAULT_BREAKPOINTS,
-        forceFormat: this.options?.forceFormat,
-        optimizeOrientation: this.options?.optimizeOrientation ?? true,
-        optimizeSize: this.options?.optimizeSize ?? true,
-        responsiveDimensions: this.options?.responsiveDimensions ?? true,
-        disableThumbnail: this.options?.disableThumbnail ?? false,
-        folder: this.options?.folder,
-        disk: this.options?.disk,
-        blurhash: getDefaultBlurhashOptions(this.options),
-        persistentFileNames: this.options?.persistentFileNames ?? false,
-      } as AttachmentOptions,
-      options
-    )
-
+    /**
+     * CRITICAL: Don't set default values here. Only pass along
+     * just the provided options. The decorator will handle merging
+     * of this provided options with the decorator options appropriately.
+     */
+    this.#options = options || {}
     return this
   }
 
-  protected async enhanceFile(): Promise<ImageInfo> {
+  protected async enhanceFile(options: AttachmentOptions): Promise<ImageInfo> {
     // Optimise the image buffer and return the optimised buffer
     // and the info of the image
-    const { buffer, info } = await optimize(this.buffer!, this.options)
+    const { buffer, info } = await optimize(this.buffer!, options)
 
     // Override the `imageInfo` object with the optimised `info` object
     // As the optimised `info` object is preferred
@@ -358,7 +348,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Save image to the disk. Results in noop when "this.isLocal = false"
    */
   public async save() {
-    const options = getMergedOptions(this.options || {})
+    const options = getMergedOptions(this.#options || {})
 
     try {
       /**
@@ -373,7 +363,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
        * Optimise the original file and return the enhanced buffer and
        * information of the enhanced buffer
        */
-      const enhancedImageData = await this.enhanceFile()
+      const enhancedImageData = await this.enhanceFile(options)
 
       /**
        * Generate the name of the original image
@@ -516,7 +506,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Delete original and responsive images from the disk
    */
   public async delete() {
-    const options = getMergedOptions(this.options || {})
+    const options = getMergedOptions(this.#options || {})
 
     try {
       if (!this.isPersisted) {
@@ -559,7 +549,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
      * Compute urls when preComputeUrls is set to true
      * or the `preComputeUrls` function exists
      */
-    if (!this.options?.preComputeUrls && this.isLocal) {
+    if (!this.#options?.preComputeUrls && this.isLocal) {
       return
     }
 
@@ -568,8 +558,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     /**
      * Generate url using the user defined preComputeUrls method
      */
-    if (typeof this.options?.preComputeUrls === 'function') {
-      const urls = await this.options.preComputeUrls(disk, this).catch((error) => {
+    if (typeof this.#options?.preComputeUrls === 'function') {
+      const urls = await this.#options.preComputeUrls(disk, this).catch((error) => {
         this.loggerInstance.error('Adonis Responsive Attachment error: %o', error)
         return null
       })
@@ -605,7 +595,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         let url: string
 
         if (key === 'name') {
-          if ((this.options?.keepOriginal ?? true) === false || !this.name) {
+          if ((this.#options?.keepOriginal ?? true) === false || !this.name) {
             continue
           }
 
@@ -681,7 +671,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public toObject() {
     const { buffer, url, ...originalAttributes } = this.attributes
 
-    return merge((this.options?.keepOriginal ?? true) ? originalAttributes : {}, {
+    return merge((this.#options?.keepOriginal ?? true) ? originalAttributes : {}, {
       breakpoints: this.breakpoints,
     })
   }
