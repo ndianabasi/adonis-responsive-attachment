@@ -87,12 +87,12 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
     if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
       throw new RangeError(
-        `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+        `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
       )
     }
 
     if (!file.tmpPath) {
-      throw new Error('Please provide a valid file')
+      throw new Error('[Adonis Responsive Attachment] Please provide a valid file')
     }
 
     // Get the file buffer
@@ -163,7 +163,10 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       try {
         attributes = JSON.parse(response) as ImageAttributes
       } catch (error) {
-        ResponsiveAttachment.logger.warn('Incompatible image data skipped: %s', response)
+        ResponsiveAttachment.logger.warn(
+          '[Adonis Responsive Attachment] Incompatible image data skipped: %s',
+          response
+        )
         attributes = null
       }
     } else {

@@ -60,7 +60,7 @@ class ImageDimensionsCheck {
     }
 
     if (!file.tmpPath) {
-      throw new Error('File is invalid')
+      throw new Error('[Adonis Responsive Attachment] File is invalid')
     }
 
     const imageBuffer = await readFile(file.tmpPath)
@@ -110,12 +110,12 @@ class ImageDimensionsCheck {
       return
     }
 
-    throw new Error('Invalid image validation operation')
+    throw new Error('[Adonis Responsive Attachment] Invalid image validation operation')
   }
 }
 
 function throwCatchallError(error: Error) {
-  if (error.message === 'Invalid image validation operation') {
+  if (error.message === '[Adonis Responsive Attachment] Invalid image validation operation') {
     throw error
   }
 }

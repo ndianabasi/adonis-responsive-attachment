@@ -285,7 +285,7 @@ export const generateBreakpointImages = async function (
     return []
   }
 
-  const originalDimensions: FileDimensions = await getDimensions(imageData.buffer!)
+  const originalDimensions = await getDimensions(imageData.buffer!)
 
   const activeBreakpoints = pickBy(options.breakpoints, (value) => {
     return value !== 'off'
@@ -327,10 +327,10 @@ export function encodeImageToBlurhash(
   const { componentX, componentY } = blurhash || {}
 
   if (!componentX || !componentY) {
-    throw new Error('Ensure "componentX" and "componentY" are set')
+    throw new Error('[Adonis Responsive Attachment] Ensure "componentX" and "componentY" are set')
   }
   if (!imageBuffer) {
-    throw new Error('Ensure "buffer" is provided')
+    throw new Error('[Adonis Responsive Attachment] Ensure "buffer" is provided')
   }
 
   return new Promise(async (resolve, reject) => {
