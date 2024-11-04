@@ -1,7 +1,7 @@
 {
   "extends": [
     "plugin:adonis/typescriptPackage",
-    "prettier"
+    "plugin:prettier/recommended"
   ],
   "plugins": [
     "prettier"

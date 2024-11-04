@@ -12,7 +12,6 @@
 import detect from 'detect-file-type'
 import { readFile } from 'fs/promises'
 import { DEFAULT_BREAKPOINTS } from './decorator'
-import { cuid } from '@poppinss/utils/build/helpers'
 import { merge, isEmpty, assign, set } from 'lodash'
 import { LoggerContract } from '@ioc:Adonis/Core/Logger'
 import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
@@ -87,12 +86,12 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
     if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
       throw new RangeError(
-        `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+        `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
       )
     }
 
     if (!file.tmpPath) {
-      throw new Error('Please provide a valid file')
+      throw new Error('[Adonis Responsive Attachment] Please provide a valid file')
     }
 
     // Get the file buffer
@@ -163,7 +162,10 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       try {
         attributes = JSON.parse(response) as ImageAttributes
       } catch (error) {
-        ResponsiveAttachment.logger.warn('Incompatible image data skipped: %s', response)
+        ResponsiveAttachment.logger.warn(
+          '[Adonis Responsive Attachment] Incompatible image data skipped: %s',
+          response
+        )
         attributes = null
       }
     } else {
@@ -221,12 +223,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public mimeType?: string
 
   /**
-   * The image hash.
-   * @deprecated Will be removed in later versions
-   */
-  public hash?: string
-
-  /**
    * The image width.
    */
   public width?: number
@@ -266,10 +262,12 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    */
   public isDeleted: boolean
 
-  constructor(attributes: AttachmentAttributes & { fileName?: string }, private buffer?: Buffer) {
+  constructor(
+    attributes: AttachmentAttributes & { fileName?: string },
+    private buffer?: Buffer
+  ) {
     this.name = attributes.name
     this.size = attributes.size
-    this.hash = attributes.hash
     this.width = attributes.width
     this.format = attributes.format
     this.blurhash = attributes.blurhash
@@ -286,7 +284,6 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
     return {
       name: this.name,
       size: this.size,
-      hash: this.hash,
       width: this.width,
       format: this.format,
       height: this.height,
@@ -338,7 +335,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         folder: this.options?.folder,
         disk: this.options?.disk,
         blurhash: getDefaultBlurhashOptions(this.options),
-      },
+        persistentFileNames: this.options?.persistentFileNames ?? false,
+      } as AttachmentOptions,
       options
     )
 
@@ -352,15 +350,15 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
 
     // Override the `imageInfo` object with the optimised `info` object
     // As the optimised `info` object is preferred
-    // Also append the `hash` and `buffer`
-    return assign({ ...this.attributes }, info, { hash: cuid(), buffer })
+    // Also append the `buffer`
+    return assign({ ...this.attributes }, info, { buffer })
   }
 
   /**
    * Save image to the disk. Results in noop when "this.isLocal = false"
    */
   public async save() {
-    const OPTIONS = getMergedOptions(this.options || {})
+    const options = getMergedOptions(this.options || {})
 
     try {
       /**
@@ -380,11 +378,10 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Generate the name of the original image
        */
-      this.name = OPTIONS.keepOriginal
+      this.name = options.keepOriginal
         ? generateName({
             extname: enhancedImageData.extname,
-            hash: enhancedImageData.hash,
-            options: OPTIONS,
+            options: options,
             prefix: 'original',
             fileName: this.fileName,
           })
@@ -394,9 +391,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
        * Update the local attributes with the attributes
        * of the optimised original file
        */
-      if (OPTIONS.keepOriginal) {
+      if (options.keepOriginal) {
         this.size = enhancedImageData.size
-        this.hash = enhancedImageData.hash
         this.width = enhancedImageData.width
         this.height = enhancedImageData.height
         this.format = enhancedImageData.format
@@ -413,14 +409,14 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Write the optimised original image to the disk
        */
-      if (OPTIONS.keepOriginal) {
+      if (options.keepOriginal) {
         await this.getDisk().put(enhancedImageData.name!, enhancedImageData.buffer!)
       }
 
       /**
        * Generate image thumbnail data
        */
-      const thumbnailImageData = await generateThumbnail(enhancedImageData, OPTIONS)
+      const thumbnailImageData = await generateThumbnail(enhancedImageData, options)
 
       if (thumbnailImageData) {
         // Set blurhash to top-level image data
@@ -429,7 +425,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         enhancedImageData.blurhash = thumbnailImageData.blurhash
       }
 
-      const thumbnailIsRequired = OPTIONS.responsiveDimensions && !OPTIONS.disableThumbnail
+      const thumbnailIsRequired = options.responsiveDimensions && !options.disableThumbnail
 
       if (thumbnailImageData && thumbnailIsRequired) {
         /**
@@ -447,7 +443,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Generate breakpoint image data
        */
-      const breakpointFormats = await generateBreakpointImages(enhancedImageData, OPTIONS)
+      const breakpointFormats = await generateBreakpointImages(enhancedImageData, options)
       if (breakpointFormats && Array.isArray(breakpointFormats) && breakpointFormats.length > 0) {
         for (const format of breakpointFormats) {
           if (!format) continue
@@ -480,7 +476,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Update the width and height
        */
-      if (OPTIONS.keepOriginal) {
+      if (options.keepOriginal) {
         this.width = enhancedImageData.width
         this.height = enhancedImageData.height
       }
@@ -520,7 +516,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    * Delete original and responsive images from the disk
    */
   public async delete() {
-    const OPTIONS = getMergedOptions(this.options || {})
+    const options = getMergedOptions(this.options || {})
 
     try {
       if (!this.isPersisted) {
@@ -530,7 +526,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Delete the original image
        */
-      if (OPTIONS.keepOriginal) await this.getDisk().delete(this.name!)
+      if (options.keepOriginal) await this.getDisk().delete(this.name!)
       /**
        * Delete the responsive images
        */
@@ -685,7 +681,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public toObject() {
     const { buffer, url, ...originalAttributes } = this.attributes
 
-    return merge(this.options?.keepOriginal ?? true ? originalAttributes : {}, {
+    return merge((this.options?.keepOriginal ?? true) ? originalAttributes : {}, {
       breakpoints: this.breakpoints,
     })
   }

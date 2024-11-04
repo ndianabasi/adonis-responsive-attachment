@@ -42,7 +42,14 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     preComputeUrls?:
       | boolean
       | ((disk: DriverContract, attachment: ResponsiveAttachmentContract) => Promise<UrlRecords>)
+    /**
+     * When enabled, blurhash will be generated for the images
+     */
     blurhash?: BlurhashOptions
+    /**
+     * When enabled, filenames of attachments will be persistent by not generating a random suffix during each upload
+     */
+    persistentFileNames?: boolean
   }
 
   export type BlurhashOptions = {
@@ -77,12 +84,6 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
      * The file mimetype.
      */
     mimeType?: string
-
-    /**
-     * The hash string of the image
-     * @deprecated Will be removed in later versions
-     */
-    hash?: string
 
     /**
      * The width of the image

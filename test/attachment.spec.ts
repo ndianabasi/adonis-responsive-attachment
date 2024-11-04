@@ -30,7 +30,6 @@ const samplePersistedImageData = {
   isLocal: false,
   name: 'original_ckw5lpv7v0002egvobe1b0oav.jpg',
   size: 291.69,
-  hash: 'ckw5lpv7v0002egvobe1b0oav',
   width: 1500,
   format: 'jpeg',
   height: 1000,
@@ -39,7 +38,6 @@ const samplePersistedImageData = {
   breakpoints: {
     thumbnail: {
       name: 'thumbnail_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 234,
@@ -48,7 +46,6 @@ const samplePersistedImageData = {
     },
     large: {
       name: 'large_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 1000,
@@ -57,7 +54,6 @@ const samplePersistedImageData = {
     },
     medium: {
       name: 'medium_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 750,
@@ -66,7 +62,6 @@ const samplePersistedImageData = {
     },
     small: {
       name: 'small_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 500,
@@ -1311,7 +1306,7 @@ test.group('ResponsiveAttachment | errors', (group) => {
         } catch (error) {
           assert.equal(
             error.message,
-            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
           )
           ctx.response.send(error)
           ctx.response.finish()
@@ -1395,7 +1390,6 @@ test.group('Do not generate save original image when `options.keepOriginal` is f
 
     assert.notExists(body.name)
     assert.notExists(body.size)
-    assert.notExists(body.hash)
     assert.notExists(body.width)
     assert.notExists(body.format)
     assert.notExists(body.height)
@@ -1459,7 +1453,6 @@ test.group('Do not generate save original image when `options.keepOriginal` is f
 
     assert.notExists(body.name)
     assert.notExists(body.size)
-    assert.notExists(body.hash)
     assert.notExists(body.width)
     assert.notExists(body.format)
     assert.notExists(body.height)

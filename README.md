@@ -34,7 +34,7 @@ On the frontend of your blog, you can use the `srcset` attribute of the `img` el
 - Automatically removes the old images (original and generated responsive images) from the disk when a new image is assigned to the model.
 - Handles failure cases gracefully. No images will be stored if the model fails to persist.
 - Similarly, no old images are removed if the model fails to persist during an update or the deletion fails.
-- Provides detailed properties of the original and generated images including: `name`, `width`, `height`, `size`, `format`, `mimetype`, `hash`, `extname`, and `url`.
+- Provides detailed properties of the original and generated images including: `name`, `width`, `height`, `size`, `format`, `mimetype`, `extname`, and `url`.
 - Can auto-rotate images during the optimisation process.
 - Allows you to customise the breakpoints for generating the responsive images
 - Allows you to disable generation of responsive images.
@@ -376,7 +376,6 @@ This will persist the original image and generated responsive images in the `web
 {
   name: 'original_ckw5lpv7v0002egvobe1b0oav.webp',
   size: 291.69,
-  hash: 'ckw5lpv7v0002egvobe1b0oav',
   width: 1500,
   format: 'webp',
   height: 1000,
@@ -386,7 +385,6 @@ This will persist the original image and generated responsive images in the `web
   breakpoints: {
     thumbnail: {
       name: 'thumbnail_ckw5lpv7v0002egvobe1b0oav.webp',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'webp',
       mimeType: 'image/webp',
       width: 234,
@@ -395,7 +393,6 @@ This will persist the original image and generated responsive images in the `web
     },
     large: {
       name: 'large_ckw5lpv7v0002egvobe1b0oav.webp',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'webp',
       mimeType: 'image/webp',
       width: 1000,
@@ -404,7 +401,6 @@ This will persist the original image and generated responsive images in the `web
     },
     medium: {
       name: 'medium_ckw5lpv7v0002egvobe1b0oav.webp',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'webp',
       mimeType: 'image/webp',
       width: 750,
@@ -413,7 +409,6 @@ This will persist the original image and generated responsive images in the `web
     },
     small: {
       name: 'small_ckw5lpv7v0002egvobe1b0oav.webp',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'webp',
       mimeType: 'image/webp',
       width: 500,
@@ -496,7 +491,6 @@ class Post extends BaseModel {
 
 const post = await Post.findOrFail(1)
 post.coverImage.name // does not exist
-post.coverImage.hash // does not exist
 post.coverImage.width // does not exist
 post.coverImage.format // does not exist
 post.coverImage.height // does not exist
@@ -529,7 +523,6 @@ A responsive format with blurhash looks like this:
 ```javascript
 {
   name: 'small_avatar_clt8v5bva00267fi1542b3axb.jpg',
-  hash: 'clt8v5bva00267fi1542b3axb',
   extname: 'jpg',
   mimeType: 'image/jpeg',
   format: 'jpeg',
@@ -540,7 +533,36 @@ A responsive format with blurhash looks like this:
 }
 ```
 
-Note that when blurhash is disabled, the `blurhash` property will be `undefined` before serialisation and missing after serialisation.
+> [!TIP]
+> When blurhash is disabled, the `blurhash` property will be `undefined` before serialisation and missing after serialisation.
+
+### 12. The `persistentFileNames` Option
+
+When enabled, the `persistentFileNames` option ensures that filenames of attachments remain constant across updates. This is very useful for public images such as OG images for websites where the names of the images should remain constant across updates to avoid breaking previews of your contents across platforms where they have been previously shared.
+
+```ts
+class Post extends BaseModel {
+  @responsiveAttachment({persistentFileNames: true, folder: 'post_images'})
+  public ogImage: ResponsiveAttachmentContract
+}
+
+const post = await Post.findOrFail(123)
+post.ogImage = await ResponsiveAttachment.fromBuffer(ogImageBuffer1, `post_${post.id}`)
+await post.save()
+await post.refresh()
+
+assert.equal(post.ogImage.name, 'post_images/original_post_123.jpg') // true
+
+post.ogImage = await ResponsiveAttachment.fromBuffer(ogImageBuffer2, `post_${post.id}`)
+await post.save()
+await post.refresh()
+
+assert.equal(post.ogImage.name, 'post_images/original_post_123.jpg') // true
+assert.isTrue(await Drive.exists(post.ogImage.name)) // true
+```
+
+> [!TIP]
+> When composing the folder and/or file names for persistent attachments ensure you use attributes of the resources which will not change such as the `id`.
 
 ## Generating URLs
 
@@ -550,7 +572,6 @@ By default, the `adonis-responsive-attachment`, will not generate the URLs of th
 {
   name: 'original_ckw5lpv7v0002egvobe1b0oav.jpg',
   size: 291.69,
-  hash: 'ckw5lpv7v0002egvobe1b0oav',
   width: 1500,
   format: 'jpeg',
   height: 1000,
@@ -560,7 +581,6 @@ By default, the `adonis-responsive-attachment`, will not generate the URLs of th
   breakpoints: {
     thumbnail: {
       name: 'thumbnail_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 234,
@@ -569,7 +589,6 @@ By default, the `adonis-responsive-attachment`, will not generate the URLs of th
     },
     large: {
       name: 'large_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 1000,
@@ -578,7 +597,6 @@ By default, the `adonis-responsive-attachment`, will not generate the URLs of th
     },
     medium: {
       name: 'medium_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 750,
@@ -587,7 +605,6 @@ By default, the `adonis-responsive-attachment`, will not generate the URLs of th
     },
     small: {
       name: 'small_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 500,
@@ -658,7 +675,6 @@ Pre-computation stores a JSON with `url` properties for the original and respons
 {
   name: 'original_ckw5lpv7v0002egvobe1b0oav.jpg',
   size: 291.69,
-  hash: 'ckw5lpv7v0002egvobe1b0oav',
   width: 1500,
   format: 'jpeg',
   height: 1000,
@@ -668,7 +684,6 @@ Pre-computation stores a JSON with `url` properties for the original and respons
   breakpoints: {
     thumbnail: {
       name: 'thumbnail_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 234,
@@ -678,7 +693,6 @@ Pre-computation stores a JSON with `url` properties for the original and respons
     },
     large: {
       name: 'large_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 1000,
@@ -688,7 +702,6 @@ Pre-computation stores a JSON with `url` properties for the original and respons
     },
     medium: {
       name: 'medium_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 750,
@@ -698,7 +711,6 @@ Pre-computation stores a JSON with `url` properties for the original and respons
     },
     small: {
       name: 'small_ckw5lpv7v0002egvobe1b0oav.jpg',
-      hash: 'ckw5lpv7v0002egvobe1b0oav',
       extname: 'jpg',
       mimeType: 'image/jpeg',
       width: 500,
