@@ -20,7 +20,7 @@
     "lint": "eslint . --ext=.ts --fix",
     "format": "prettier --write .",
     "commit": "git-cz",
-    "release": "np --branch=develop --yolo",
+    "release": "np",
     "version": "npm run build",
     "sync-labels": "github-label-sync --labels ./node_modules/@adonisjs/mrm-preset/gh-labels.json ndianabasi/adonis-responsive-attachment"
   },
@@ -80,8 +80,12 @@
     }
   },
   "np": {
+    "yolo": true,
     "contents": ".",
-    "anyBranch": false
+    "anyBranch": false,
+    "branch": "develop",
+    "releaseDraft": true,
+    "message": "chore: bump version to %s 🚀"
   },
   "repository": {
     "type": "git",
