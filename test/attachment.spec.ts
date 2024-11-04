@@ -22,6 +22,7 @@ import { getDimensions } from '../src/Helpers/image_manipulation_helper'
 import { BodyParserMiddleware } from '@adonisjs/bodyparser/build/src/BodyParser'
 import { ResponsiveAttachmentContract } from '@ioc:Adonis/Addons/ResponsiveAttachment'
 import { isBlurhashValid } from 'blurhash'
+import { readFileSync } from 'fs'
 
 let app: ApplicationContract
 
@@ -98,6 +99,37 @@ test.group('ResponsiveAttachment | fromDbResponse', (group) => {
 
     assert.isTrue(responsiveAttachment?.isPersisted)
     assert.isFalse(responsiveAttachment?.isLocal)
+  })
+
+  test('"setOptions" should properly override decorator options', async (assert) => {
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @Attachment({ persistentFileNames: true, responsiveDimensions: false })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const buffer = readFileSync(
+      join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg')
+    )
+
+    const user = new User()
+    user.username = 'Ndianabasi'
+    user.avatar = await ResponsiveAttachment.fromBuffer(buffer)
+    user.avatar.setOptions({ blurhash: { enabled: true } })
+    await user.save()
+
+    assert.deepNestedInclude(user.avatar.getOptions, {
+      blurhash: { enabled: true, componentX: 4, componentY: 3 },
+      persistentFileNames: true,
+      responsiveDimensions: false,
+    })
   })
 
   test('save method should result in noop when image attachment is created from db response', async (assert) => {

@@ -52,7 +52,7 @@ async function persistAttachment(
    * remove the existing file.
    */
   if (existingFile && !newFile) {
-    existingFile.setOptions(merge(options, existingFile.options))
+    existingFile.setOptions(merge(options, existingFile.getOptions))
     modelInstance['attachments'].detached.push(existingFile)
     return
   }
@@ -62,14 +62,14 @@ async function persistAttachment(
    * file.
    */
   if (newFile && newFile.isLocal) {
-    newFile.setOptions(merge(options, newFile.options))
+    newFile.setOptions(merge(options, newFile.getOptions))
     modelInstance['attachments'].attached.push(newFile)
 
     /**
      * If there was an existing file, then we must get rid of it
      */
-    if (existingFile && !newFile.options?.persistentFileNames) {
-      existingFile.setOptions(merge(options, newFile.options))
+    if (existingFile && !newFile.getOptions?.persistentFileNames) {
+      existingFile.setOptions(merge(options, newFile.getOptions))
       modelInstance['attachments'].detached.push(existingFile)
     }
 

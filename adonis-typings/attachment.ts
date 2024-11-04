@@ -143,9 +143,15 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     isDeleted: boolean
 
     /**
-     * Define persistance options
+     * Define persistence options
      */
     setOptions(options?: AttachmentOptions): this
+
+    /**
+     * Get current state of attachment options within a responsive
+     * attachment instance
+     */
+    readonly getOptions: AttachmentOptions
 
     /**
      * Save responsive images to the disk. Results if noop when "this.isLocal = false"
