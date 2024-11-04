@@ -68,7 +68,7 @@ async function persistAttachment(
     /**
      * If there was an existing file, then we must get rid of it
      */
-    if (existingFile) {
+    if (existingFile && !newFile.options?.persistentFileNames) {
       existingFile.setOptions(merge(options, existingFile.options))
       modelInstance['attachments'].detached.push(existingFile)
     }
@@ -240,6 +240,7 @@ export const responsiveAttachment: ResponsiveAttachmentDecorator = (options) => 
       optimizeSize = true,
       responsiveDimensions = true,
       disableThumbnail = false,
+      persistentFileNames = false,
       ...columnOptions
     } = options || {}
 
@@ -266,6 +267,7 @@ export const responsiveAttachment: ResponsiveAttachmentDecorator = (options) => 
         responsiveDimensions,
         disableThumbnail,
         blurhash: enableBlurhash,
+        persistentFileNames,
       },
     })
 

@@ -25,7 +25,8 @@ export const getMergedOptions = function (options: AttachmentOptions): Attachmen
       disableThumbnail: false,
       blurhash: getDefaultBlurhashOptions(options),
       keepOriginal: true,
-    },
+      persistentFileNames: false,
+    } as AttachmentOptions,
     options
   )
 }
@@ -107,7 +108,6 @@ export const generateBreakpoint = async ({
     const extname = getImageExtension(format as ImageInfo['format'])
     const breakpointFileName = generateName({
       extname,
-      hash: imageData.hash,
       options,
       prefix: key as keyof ImageBreakpoints,
       fileName: imageData.fileName,
@@ -118,7 +118,6 @@ export const generateBreakpoint = async ({
       file: {
         // Override attributes in `imageData`
         name: breakpointFileName,
-        hash: imageData.hash,
         extname,
         mimeType: `image/${format}`,
         format: format as AttachmentOptions['forceFormat'],
@@ -153,12 +152,15 @@ export const generateName = function ({
   extname?: string
   fileName?: string
   hash?: string
-  prefix?: keyof ImageBreakpoints | 'original'
+  prefix: keyof ImageBreakpoints | 'original'
   options?: AttachmentOptions
 }): string {
-  return `${options?.folder ? `${options.folder}/` : ''}${prefix ? `${prefix}_` : ''}${
-    fileName ? `${fileName}_` : ''
-  }${hash ? hash : cuid()}.${extname}`
+  const usePersistentFileNames = options?.persistentFileNames ?? false
+  hash = usePersistentFileNames ? '' : hash ?? cuid()
+
+  return `${options?.folder ? `${options.folder}/` : ''}${prefix}${fileName ? `_${fileName}` : ''}${
+    hash ? `_${hash}` : ''
+  }.${extname}`
 }
 
 export const optimize = async function (
@@ -236,7 +238,6 @@ export const generateThumbnail = async function (
 
       const thumbnailFileName = generateName({
         extname,
-        hash: imageData.hash,
         options,
         prefix: 'thumbnail',
         fileName: imageData.fileName,
@@ -244,7 +245,6 @@ export const generateThumbnail = async function (
 
       const thumbnailImageData: ImageInfo = {
         name: thumbnailFileName,
-        hash: imageData.hash,
         extname,
         mimeType: `image/${format}`,
         format: format as AttachmentOptions['forceFormat'],

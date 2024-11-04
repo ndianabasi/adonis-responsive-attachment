@@ -22,6 +22,7 @@ import { responsiveAttachment } from '../src/Attachment/decorator'
 import { setup, cleanup, setupApplication } from '../test-helpers'
 import { readFile } from 'fs/promises'
 import { isBlurhashValid } from 'blurhash'
+import { readFileSync } from 'fs'
 
 let app: ApplicationContract
 
@@ -2803,5 +2804,87 @@ test.group('@responsiveAttachment | blurhash', (group) => {
     assert.isUndefined(user.avatar!.breakpoints?.large.blurhash)
     assert.isUndefined(user.avatar!.breakpoints?.medium.blurhash)
     assert.isUndefined(user.avatar!.breakpoints?.thumbnail.blurhash)
+  })
+
+  test('should maintain filenames of attachments when "persistentFileNames" is enabled', async (assert) => {
+    const Drive = app.container.resolveBinding('Adonis/Core/Drive')
+    const Db = app.container.resolveBinding('Adonis/Lucid/Database')
+    const { column, BaseModel } = app.container.use('Adonis/Lucid/Orm')
+    const HttpContext = app.container.resolveBinding('Adonis/Core/HttpContext')
+
+    class User extends BaseModel {
+      @column({ isPrimary: true })
+      public id: string
+
+      @column()
+      public username: string
+
+      @responsiveAttachment({ persistentFileNames: true, folder: '1/2/3' })
+      public avatar: ResponsiveAttachmentContract | null
+    }
+
+    const server = createServer((req, res) => {
+      const ctx = HttpContext.create('/1', {}, req, res)
+      const ctx2 = HttpContext.create('/2', {}, req, res)
+
+      const buffer = readFileSync(
+        join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg')
+      )
+      const buffer2 = readFileSync(
+        join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-825x550.jpg')
+      )
+
+      app.container.make(BodyParserMiddleware).handle(ctx, async () => {
+        const trx = await Db.transaction()
+
+        const user = await User.firstOrNew({ username: 'ndianabasi' }, {}, { client: trx })
+        user.avatar = await ResponsiveAttachment.fromBuffer(buffer)
+        await user.save()
+        await trx.commit()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+
+      app.container.make(BodyParserMiddleware).handle(ctx2, async () => {
+        const trx = await Db.transaction()
+
+        const user = await User.firstOrNew({ username: 'ndianabasi' }, {}, { client: trx })
+        user.avatar = await ResponsiveAttachment.fromBuffer(buffer2)
+        await user.save()
+        await trx.commit()
+
+        ctx.response.send(user)
+        ctx.response.finish()
+      })
+    })
+
+    const { body: response1 } = await supertest(server).post('/1')
+
+    assert.equal(response1.avatar.name!, '1/2/3/original.jpg')
+    assert.equal(response1.avatar.breakpoints?.large.name!, '1/2/3/large.jpg')
+    assert.equal(response1.avatar.breakpoints?.medium.name!, '1/2/3/medium.jpg')
+    assert.equal(response1.avatar.breakpoints?.small.name!, '1/2/3/small.jpg')
+    assert.equal(response1.avatar.breakpoints?.thumbnail.name!, '1/2/3/thumbnail.jpg')
+
+    const { body: response2 } = await supertest(server).post('/2')
+
+    assert.equal(response1.avatar.name!, response2.avatar.name)
+    assert.equal(response1.avatar.breakpoints?.large.name, response2.avatar.breakpoints?.large.name)
+    assert.equal(
+      response1.avatar.breakpoints?.medium.name,
+      response2.avatar.breakpoints?.medium.name
+    )
+    assert.equal(response1.avatar.breakpoints?.small.name, response2.avatar.breakpoints?.small.name)
+    assert.equal(
+      response1.avatar.breakpoints?.thumbnail.name,
+      response2.avatar.breakpoints?.thumbnail.name
+    )
+
+    assert.isTrue(await Drive.exists(response2.avatar.name))
+    assert.isTrue(await Drive.exists(response1.avatar.breakpoints?.large.name))
+    assert.isTrue(await Drive.exists(response1.avatar.breakpoints?.medium.name))
+    assert.isTrue(await Drive.exists(response1.avatar.breakpoints?.small.name))
+    assert.isTrue(await Drive.exists(response1.avatar.breakpoints?.thumbnail.name))
   })
 })
