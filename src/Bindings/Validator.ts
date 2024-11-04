@@ -29,7 +29,10 @@ enum ImageDimensionsValidationRule {
  * Ensure image is complaint with expected dimensions validations
  */
 class ImageDimensionsCheck {
-  constructor(public ruleName: ImageDimensionsValidationRule, protected logger: LoggerContract) {}
+  constructor(
+    public ruleName: ImageDimensionsValidationRule,
+    protected logger: LoggerContract
+  ) {}
 
   /**
    * Compile validation options

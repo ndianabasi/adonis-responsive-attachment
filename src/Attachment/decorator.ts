@@ -69,7 +69,7 @@ async function persistAttachment(
      * If there was an existing file, then we must get rid of it
      */
     if (existingFile && !newFile.options?.persistentFileNames) {
-      existingFile.setOptions(merge(options, existingFile.options))
+      existingFile.setOptions(merge(options, newFile.options))
       modelInstance['attachments'].detached.push(existingFile)
     }
 

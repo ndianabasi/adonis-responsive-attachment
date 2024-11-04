@@ -262,7 +262,10 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
    */
   public isDeleted: boolean
 
-  constructor(attributes: AttachmentAttributes & { fileName?: string }, private buffer?: Buffer) {
+  constructor(
+    attributes: AttachmentAttributes & { fileName?: string },
+    private buffer?: Buffer
+  ) {
     this.name = attributes.name
     this.size = attributes.size
     this.width = attributes.width
@@ -678,7 +681,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   public toObject() {
     const { buffer, url, ...originalAttributes } = this.attributes
 
-    return merge(this.options?.keepOriginal ?? true ? originalAttributes : {}, {
+    return merge((this.options?.keepOriginal ?? true) ? originalAttributes : {}, {
       breakpoints: this.breakpoints,
     })
   }

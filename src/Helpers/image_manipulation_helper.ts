@@ -156,7 +156,7 @@ export const generateName = function ({
   options?: AttachmentOptions
 }): string {
   const usePersistentFileNames = options?.persistentFileNames ?? false
-  hash = usePersistentFileNames ? '' : hash ?? cuid()
+  hash = usePersistentFileNames ? '' : (hash ?? cuid())
 
   return `${options?.folder ? `${options.folder}/` : ''}${prefix}${fileName ? `_${fileName}` : ''}${
     hash ? `_${hash}` : ''
