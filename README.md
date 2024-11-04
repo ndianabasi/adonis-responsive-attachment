@@ -533,7 +533,36 @@ A responsive format with blurhash looks like this:
 }
 ```
 
-Note that when blurhash is disabled, the `blurhash` property will be `undefined` before serialisation and missing after serialisation.
+> [!TIP]
+> When blurhash is disabled, the `blurhash` property will be `undefined` before serialisation and missing after serialisation.
+
+### 12. The `persistentFileNames` Option
+
+When enabled, the `persistentFileNames` option ensures that filenames of attachments remain constant across updates. This is very useful for public images such as OG images for websites where the names of the images should remain constant across updates to avoid breaking previews of your contents across platforms where they have been previously shared.
+
+```ts
+class Post extends BaseModel {
+  @responsiveAttachment({persistentFileNames: true, folder: 'post_images'})
+  public ogImage: ResponsiveAttachmentContract
+}
+
+const post = await Post.findOrFail(123)
+post.ogImage = await ResponsiveAttachment.fromBuffer(ogImageBuffer1, `post_${post.id}`)
+await post.save()
+await post.refresh()
+
+assert.equal(post.ogImage.name, 'post_images/original_post_123.jpg') // true
+
+post.ogImage = await ResponsiveAttachment.fromBuffer(ogImageBuffer2, `post_${post.id}`)
+await post.save()
+await post.refresh()
+
+assert.equal(post.ogImage.name, 'post_images/original_post_123.jpg') // true
+assert.isTrue(await Drive.exists(post.ogImage.name)) // true
+```
+
+> [!TIP]
+> When composing the folder and/or file names for persistent attachments ensure you use attributes of the resources which will not change such as the `id`.
 
 ## Generating URLs
 
