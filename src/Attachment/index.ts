@@ -17,6 +17,7 @@ import type { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser'
 import { DriveManagerContract, ContentHeaders, Visibility } from '@ioc:Adonis/Core/Drive'
 import {
   allowedFormats,
+  detectHEIC,
   generateBreakpointImages,
   generateName,
   generateThumbnail,
@@ -82,18 +83,25 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       throw new SyntaxError('You should provide a non-falsy value')
     }
 
-    if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
-      throw new RangeError(
-        `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
-      )
-    }
-
     if (!file.tmpPath) {
       throw new Error('[Adonis Responsive Attachment] Please provide a valid file')
     }
 
     // Get the file buffer
     const buffer = await readFile(file.tmpPath)
+
+    const isHEIC = detectHEIC(buffer)
+    if (isHEIC) {
+      file.subtype = isHEIC.ext
+      file.extname = isHEIC.ext
+      file.type = 'image'
+    }
+
+    if (allowedFormats.includes(file?.subtype as AttachmentOptions['forceFormat']) === false) {
+      throw new RangeError(
+        `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", and "heif".`
+      )
+    }
 
     const computedFileName = fileName ? fileName : file.fieldName
 
@@ -127,12 +135,20 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
           bufferProperty = result
         })
 
-        const { mime, ext } = bufferProperty!
+        const isHEIC = detectHEIC(buffer)
+
+        let { mime, ext } = bufferProperty!
+
+        if (typeof isHEIC === 'object') {
+          mime = isHEIC.mime
+          ext = isHEIC.ext
+        }
+
         const subtype = mime.split('/').pop()
 
         if (allowedFormats.includes(subtype as AttachmentOptions['forceFormat']) === false) {
           throw new RangeError(
-            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", and "heif".`
           )
         }
 
@@ -295,8 +311,8 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
   }
 
   /**
-   * "isLocal = true" means the instance is created locally
-   * using the bodyparser file object
+   * Is `true` when the instance is created locally using the
+   * bodyparser file object or a file buffer.
    */
   public isLocal = !!this.buffer
 
@@ -516,7 +532,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       /**
        * Delete the original image
        */
-      if (options.keepOriginal) await this.getDisk().delete(this.name!)
+      if (options.keepOriginal && this.name) {
+        await this.getDisk().delete(this.name)
+      }
       /**
        * Delete the responsive images
        */
@@ -524,7 +542,9 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
         for (const key in this.breakpoints) {
           if (Object.prototype.hasOwnProperty.call(this.breakpoints, key)) {
             const breakpointImage = this.breakpoints[key] as ImageAttributes
-            await this.getDisk().delete(breakpointImage.name!)
+            if (breakpointImage.name) {
+              await this.getDisk().delete(breakpointImage.name)
+            }
           }
         }
       }
@@ -532,7 +552,7 @@ export class ResponsiveAttachment implements ResponsiveAttachmentContract {
       this.isDeleted = true
       this.isPersisted = false
     } catch (error) {
-      this.loggerInstance.fatal('Adonis Responsive Attachment error', error)
+      this.loggerInstance.fatal('[Adonis Responsive Attachment] error', error)
       throw error
     }
   }

@@ -1,0 +1,67 @@
+FROM node:20-bookworm-slim
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG VIPS_VERSION=8.16.1
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+  ca-certificates wget gnupg curl xz-utils
+
+RUN apt-get update --fix-missing \
+  && apt-get install -y \
+  python3 \
+  ninja-build meson \
+  gcc \
+  g++ \
+  make \
+  pkg-config \
+  # core libvips deps
+  libglib2.0-dev \
+  libexpat1-dev \
+  libxml2-dev \
+  liborc-dev \
+  libopenslide-dev \
+  # Image support
+  libjpeg-dev \
+  libpng-dev \
+  libtiff-dev \
+  libwebp-dev \
+  libheif-dev \
+  librsvg2-dev \
+  libgif-dev \
+  # PDF support
+  libpoppler-glib-dev \
+  # FFTW (for advanced filters)
+  libfftw3-dev \
+  --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get clean
+
+# Download, build & install libvips with all plugins enabled
+RUN wget -O vips.tar.xz \
+  https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.xz \
+  && tar xf vips.tar.xz \
+  && cd vips-${VIPS_VERSION} \
+  && meson setup build \
+  --prefix=/usr/local \
+  -Djpeg=enabled \
+  -Dpng=enabled \
+  -Dtiff=enabled \
+  -Dwebp=enabled \
+  -Dheif=enabled \
+  -Drsvg=enabled \
+  -Dcgif=enabled \
+  -Dpoppler=enabled \
+  -Dorc=enabled \
+  -Dfftw=enabled \
+  -Dopenslide=enabled \
+  -Ddeprecated=false \
+  && cd build \
+  && ninja \
+  && ninja install \
+  && cd ../.. \
+  && rm -rf vips-${VIPS_VERSION} vips.tar.xz \
+  && ldconfig
+
+# Verify installation
+RUN vips --version && vips --vips-config

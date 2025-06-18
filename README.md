@@ -39,7 +39,7 @@ On the frontend of your blog, you can use the `srcset` attribute of the `img` el
 - Allows you to customise the breakpoints for generating the responsive images
 - Allows you to disable generation of responsive images.
 - Allows you to disable optimisation of images.
-- Converts images from one format to another. The following formats are supported: `jpeg`, `png`, `webp`, `tiff`, and `avif`.
+- Converts images from one format to another. The following formats are supported: `jpeg`, `png`, `webp`, `tiff`, `avif`, and `heif`.
 - Allows you to disable some breakpoints.
 - Allows you to disable the generation of the thumbnail image without affecting the generation of other responsive images.
 - Ability to create attachments from file buffers. This is very helpful when you want to persist images outside of the HTTP life-cycle.
@@ -847,6 +847,11 @@ await ctx.request.validate({
 
 You are free to apply all the available rules to a single request key if your validation logic requires such strictness.
 
+### HEIF Support
+
+This library supports the `HEIF` image format. Both `.heic` and `.heif` extensions are acceptable. I have also ensured that `HEIF` videos are rejected. I will appreciate feedback on this.
+
+To support `HEIF` image processing, you must build `libvips` from source and enable `heif` at build time. I have provided a sample shell script (for MacOS) and a sample Dockerfile (for Debian images) in the `examples` folder. Once `libvips` is detected, `sharp` will automatically build itself from source to support `heif` processing. [Learn more](https://sharp.pixelplumbing.com/install/#building-from-source).
  
 [github-actions-image]: https://img.shields.io/github/workflow/status/ndianabasi/adonis-responsive-attachment/test?style=for-the-badge
 [github-actions-url]: https://github.com/ndianabasi/adonis-responsive-attachment/actions/workflows/test.yml "github-actions"

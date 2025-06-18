@@ -268,7 +268,7 @@ test.group('ResponsiveAttachment | fromFile', (group) => {
     await cleanup(app)
   })
 
-  test('create attachment from the user-uploaded image', async (assert) => {
+  test('create attachment from the user-uploaded image (including HEIF image)', async (assert) => {
     const Drive = app.container.resolveBinding('Adonis/Core/Drive')
 
     const server = createServer((req, res) => {
@@ -292,16 +292,26 @@ test.group('ResponsiveAttachment | fromFile', (group) => {
       })
     })
 
-    const { body } = await supertest(server)
+    const { body: body1 } = await supertest(server)
       .post('/')
       .attach('avatar', join(__dirname, '../Statue-of-Sardar-Vallabhbhai-Patel-1500x1000.jpg'))
 
-    assert.isTrue(await Drive.exists(body.name))
-    assert.isTrue(await Drive.exists(body.breakpoints?.thumbnail.name))
-    assert.isTrue(await Drive.exists(body.breakpoints?.small.name))
-    assert.isTrue(await Drive.exists(body.breakpoints?.medium.name))
-    assert.isTrue(await Drive.exists(body.breakpoints?.large.name))
-  })
+    const { body: body2 } = await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../shelf-christmas-decoration.heic'))
+
+    const { body: body3 } = await supertest(server)
+      .post('/')
+      .attach('avatar', join(__dirname, '../sample1.heif'))
+
+    for (const body of [body1, body2, body3]) {
+      assert.isTrue(await Drive.exists(body.name))
+      assert.isTrue(await Drive.exists(body.breakpoints?.thumbnail.name))
+      assert.isTrue(await Drive.exists(body.breakpoints?.small.name))
+      assert.isTrue(await Drive.exists(body.breakpoints?.medium.name))
+      assert.isTrue(await Drive.exists(body.breakpoints?.large.name))
+    }
+  }).timeout(20000)
 
   test('change the format of the user-uploaded image', async (assert) => {
     const server = createServer((req, res) => {
@@ -1183,11 +1193,34 @@ test.group('ResponsiveAttachment | fromBuffer', (group) => {
         ctx.response.send(responsiveAttachment)
         ctx.response.finish()
       })
+
+      const ctx2 = app.container
+        .resolveBinding('Adonis/Core/HttpContext')
+        .create('/heic', {}, req, res)
+      app.container.make(BodyParserMiddleware).handle(ctx2, async () => {
+        const readableStream = await readFile(join(__dirname, '../shelf-christmas-decoration.heic'))
+        const responsiveAttachment = await ResponsiveAttachment.fromBuffer(readableStream)
+        await responsiveAttachment.save()
+
+        assert.isTrue(responsiveAttachment.isPersisted)
+        assert.isTrue(responsiveAttachment.isLocal)
+
+        assert.isTrue(await Drive.exists(responsiveAttachment?.name!))
+        assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.thumbnail.name!))
+        assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.small.name!))
+        assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.medium.name!))
+        assert.isTrue(await Drive.exists(responsiveAttachment?.breakpoints?.large.name!))
+
+        ctx2.response.send(responsiveAttachment)
+        ctx2.response.finish()
+      })
     })
 
     const { body } = await supertest(server).post('/')
+    const { body: body2 } = await supertest(server).post('/heic')
 
     assert.isTrue(await Drive.exists(body.name))
+    assert.isTrue(await Drive.exists(body2.name))
   })
 
   test('pre-compute url for newly-created images', async (assert) => {
@@ -1313,7 +1346,7 @@ test.group('ResponsiveAttachment | errors', (group) => {
         } catch (error) {
           assert.equal(
             error.message,
-            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", and "heif".`
           )
           ctx.response.send(error)
           ctx.response.finish()
@@ -1338,7 +1371,7 @@ test.group('ResponsiveAttachment | errors', (group) => {
         } catch (error) {
           assert.equal(
             error.message,
-            `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", and "avif".`
+            `[Adonis Responsive Attachment] Uploaded file is not an allowable image. Make sure that you uploaded only the following format: "jpeg", "png", "webp", "tiff", "avif", and "heif".`
           )
           ctx.response.send(error)
           ctx.response.finish()

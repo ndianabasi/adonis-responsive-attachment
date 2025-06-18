@@ -34,7 +34,7 @@ declare module '@ioc:Adonis/Addons/ResponsiveAttachment' {
     folder?: string
     keepOriginal?: boolean
     breakpoints?: Breakpoints
-    forceFormat?: 'jpeg' | 'png' | 'webp' | 'avif' | 'tiff'
+    forceFormat?: 'jpeg' | 'png' | 'webp' | 'avif' | 'tiff' | 'heif'
     optimizeSize?: boolean
     optimizeOrientation?: boolean
     responsiveDimensions?: boolean
