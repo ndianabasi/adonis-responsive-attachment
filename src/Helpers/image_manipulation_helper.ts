@@ -74,6 +74,7 @@ export const allowedFormats: Array<AttachmentOptions['forceFormat']> = [
   'webp',
   'avif',
   'tiff',
+  'heif',
 ]
 
 export const canBeProcessed = async (buffer: Buffer) => {
@@ -354,4 +355,65 @@ export function encodeImageToBlurhash(
       return reject(error)
     }
   })
+}
+
+export const detectHEIC = (buffer: Buffer) => {
+  // Need at least 12 bytes to check ftyp + brand
+  if (buffer.length < 12) {
+    return false
+  }
+
+  // Bytes 0–3 start with 00 00 00 (box size)
+  if (!(buffer[0] === 0x00 && buffer[1] === 0x00 && buffer[2] === 0x00)) {
+    return false
+  }
+
+  // Bytes 4–8 must be "ftyp"
+  if (buffer.toString('ascii', 4, 8) !== 'ftyp') {
+    return false
+  }
+
+  const brand = buffer.toString('ascii', 8, 12)
+  const IMAGE_BRANDS = ['heic', 'heix']
+  const MULTI_IMAGE_BRANDS = ['mif1', 'msf1']
+  const VIDEO_BRANDS = ['hevc', 'hevx']
+
+  // Reject outright if it’s a video-brand HEIF
+  if (VIDEO_BRANDS.includes(brand)) {
+    return false
+  }
+
+  // Helper: scan for 'hdlr' boxes and their handler_type
+  const hasHandlerType = (type: 'pict' | 'vide'): boolean => {
+    const tag = Buffer.from('hdlr')
+    let idx = buffer.indexOf(tag)
+    while (idx !== -1) {
+      // handler_type is 8 bytes after the 'hdlr' tag
+      const handler = buffer.toString('ascii', idx + 8, idx + 12)
+      if (handler === type) {
+        return true
+      }
+      idx = buffer.indexOf(tag, idx + 1)
+    }
+    return false
+  }
+
+  // If it has a 'vide' handler, it’s a video HEIF → reject
+  if (hasHandlerType('vide')) {
+    return false
+  }
+
+  // Now accept only still-image HEIF brands (or multi-image)
+  if (IMAGE_BRANDS.includes(brand) || MULTI_IMAGE_BRANDS.includes(brand)) {
+    // optionally you could double-check that there's at least one 'pict' handler
+    // if (!hasHandlerType('pict')) return false
+
+    return {
+      ext: 'heif',
+      mime: 'image/heif',
+    }
+  }
+
+  // Anything else falls back to false
+  return false
 }
