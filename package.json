@@ -110,7 +110,8 @@
   },
   "publishConfig": {
     "access": "public",
-    "tag": "latest"
+    "tag": "latest",
+    "registry": "https://registry.npmjs.org"
   },
   "packageManager": "yarn@1.22.21"
 }
